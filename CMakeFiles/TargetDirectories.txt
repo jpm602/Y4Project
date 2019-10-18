@@ -1,0 +1,8 @@
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/install/local.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/install/strip.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/B1.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/install.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/exampleB1.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/rebuild_cache.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/edit_cache.dir
+/home/jack/software/geant4/geant4.10.05-install/share/Geant4-10.5.1/examples/basic/B1/CMakeFiles/list_install_components.dir
