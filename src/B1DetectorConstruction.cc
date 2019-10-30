@@ -39,8 +39,10 @@
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4VisAttributes.hh"
 
 #include <string>
+#include <vector>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -99,6 +101,30 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4double layerSep = 4*cm;
       G4double tripletSep = 1.55*m;
       G4Material *layerMat = nist->FindOrBuildMaterial("G4_Si");
+
+      // Envelope for RPC layers in box
+      G4VisAttributes *envelopeVisAttributes = new G4VisAttributes(); // Needed to make envelopes invisible
+      envelopeVisAttributes->SetVisibility(false);
+      
+      G4Box *solidBoxEnvelope =
+	new G4Box("boxEnvelope",
+		  5*m, 5*m, 5*m);
+
+      G4LogicalVolume *logicBoxEnvelope =
+	new G4LogicalVolume(solidBoxEnvelope,
+			    worldMat,
+			    "Box");
+      logicBoxEnvelope->SetVisAttributes(envelopeVisAttributes);
+      
+      G4VPhysicalVolume *physBoxEnvelope =
+	new G4PVPlacement(0,                    // no rotation
+			 G4ThreeVector(),       // placed at origin
+			 logicBoxEnvelope,      // its logical volume
+			 "Box",                 // its name
+			 logicWorld,            // its mother  volume
+			 false,                 // no boolean operation
+			 0,                     // copy number
+			 checkOverlaps);        // overlaps checking
       
       // RPC layers - solid and logical volumes
       G4Box *solidLayer =
@@ -111,7 +137,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    "Layer");
       
       // RPC layers - physical volumes
-      // Inside box - make an envelope to group all inside box layers together in visualisation menu
+      // Inside box - place inside box envelope to group in visualisation menu
       
       // Loop to create RPC triplets
       for(unsigned int i=1; i<6; i++)
@@ -119,18 +145,71 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	  // Loop to create individual layers of RPC triplets inside box
 	  for(unsigned int j=0; j<3; j++)
 	    {
-	      G4ThreeVector layerPos = G4ThreeVector(0, 0, -5*m + i*tripletSep + j*layerSep);
+	      G4ThreeVector layerPos = G4ThreeVector(0, 0, -5*m + i*tripletSep + j*(layerSep + layerSizeZ));
 	      std::string num = std::to_string(i) + std::to_string(j);
 	      int copyNo = std::stoi(num);
+	      
 	      G4VPhysicalVolume *physLayer =
 		new G4PVPlacement(0,                     // no rotation
 				  layerPos,              // its position
 				  logicLayer,            // its logical volume
 				  "Layer",               // its name
-				  logicWorld,            // its mother  volume
+				  logicBoxEnvelope,      // its mother  volume
 				  false,                 // no boolean operation
 				  copyNo,                // copy number
 				  checkOverlaps);        // overlaps checking
+	    }
+	}
+      // RPC layers on each face of the box
+      // Make vectors to each face of cube
+      std::vector<G4ThreeVector> facePos;
+      facePos.push_back(G4ThreeVector(0, 0, 5*m + 18*cm));
+      facePos.push_back(G4ThreeVector(0, 0, -5*m - 18*cm));
+      facePos.push_back(G4ThreeVector(0, 5*m + 18*cm, 0));
+      facePos.push_back(G4ThreeVector(0, -5*m - 18*cm, 0));
+      facePos.push_back(G4ThreeVector(5*m + 18*cm, 0, 0));
+      facePos.push_back(G4ThreeVector(-5*m - 18*cm, 0, 0));
+
+      // Loop to create RPC triplets on each face
+      for(unsigned int i=0; i<facePos.size(); i++)
+	{
+	  G4RotationMatrix *rotFace = new G4RotationMatrix(); // Needed to rotate to match faces of cube
+	  if(facePos.at(i).y()!=0) // Rotate for top/bottom face
+	    rotFace->rotateX(90*deg);
+	  if(facePos.at(i).x()!=0) // Rotate for side faces
+	    rotFace->rotateY(90*deg);
+	  
+	  // Loop to create RPC layers on each face
+	  for(unsigned int j=1; j<7; j++)
+	    {
+	      // Set layer position based on which face is currently being used
+	      G4ThreeVector layerPos = facePos.at(i);
+	      if(layerPos.x()>0)
+		layerPos.setX(facePos.at(i).x() + j*(layerSep + layerSizeZ));
+	      else if(layerPos.x()<0)
+		layerPos.setX(facePos.at(i).x() - j*(layerSep + layerSizeZ));
+	      else if(layerPos.y()>0)
+		layerPos.setY(facePos.at(i).y() + j*(layerSep + layerSizeZ));
+	      else if(layerPos.y()<0)
+		layerPos.setY(facePos.at(i).y() - j*(layerSep + layerSizeZ));
+	      else if(layerPos.z()>0)
+		layerPos.setZ(facePos.at(i).z() + j*(layerSep + layerSizeZ));
+	      else if(layerPos.z()<0)
+		layerPos.setZ(facePos.at(i).z() - j*(layerSep + layerSizeZ));
+	      
+	      // Set copy number as before
+	      std::string num = std::to_string(i+1) + std::to_string(j);
+	      int copyNo = std::stoi(num);
+	      
+	      G4VPhysicalVolume *physLayer =
+	      	new G4PVPlacement(rotFace,               // rotation
+	      			  layerPos,              // its position
+	      			  logicLayer,            // its logical volume
+				  "Layer",               // its name
+	      			  logicWorld,            // its mother  volume
+	      			  false,                 // no boolean operation
+	      			  copyNo,                // copy number
+	      			  checkOverlaps);        // overlaps checking
 	    }
 	}
     }

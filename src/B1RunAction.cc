@@ -39,6 +39,7 @@
 #include "G4LogicalVolume.hh"
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4RootAnalysisManager.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -57,6 +58,20 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
 { 
   // inform the runManager to save random number seed
   G4RunManager::GetRunManager()->SetRandomNumberStore(false);
+
+  // Create analysis manager, tree, and output file
+  auto *analysisManager = G4RootAnalysisManager::Instance();
+  analysisManager->SetVerboseLevel(1);
+
+  analysisManager->CreateNtuple("output", "output");
+  
+  analysisManager->CreateNtupleDColumn("HitPosX", hitPosX);
+  analysisManager->CreateNtupleDColumn("HitPosY", hitPosY);
+  analysisManager->CreateNtupleDColumn("HitPosZ", hitPosZ);
+
+  analysisManager->FinishNtuple();
+  
+  analysisManager->OpenFile("output");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,6 +80,11 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
 {
   G4int nofEvents = run->GetNumberOfEvent();
   if (nofEvents == 0) return;
+
+  // Get analysis manager and close output
+  auto *analysisManager = G4RootAnalysisManager::Instance();
+  analysisManager->Write();
+  analysisManager->CloseFile();
   
   // Run conditions
   //  note: There is no primary generator action object for "master"

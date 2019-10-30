@@ -63,6 +63,13 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
+
+  if(volume->GetName() == "Layer" && edepStep!=0)
+    {
+      fEventAction->HitPosX(step->GetPostStepPoint()->GetPosition().x());
+      fEventAction->HitPosY(step->GetPostStepPoint()->GetPosition().y());
+      fEventAction->HitPosZ(step->GetPostStepPoint()->GetPosition().z());
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

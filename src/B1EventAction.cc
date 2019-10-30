@@ -33,12 +33,18 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 
+#include "G4RootAnalysisManager.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B1EventAction::B1EventAction(B1RunAction* runAction)
 : G4UserEventAction(),
   fRunAction(runAction)
-{} 
+{
+  hitPosX = &runAction->hitPosX;
+  hitPosY = &runAction->hitPosY;
+  hitPosZ = &runAction->hitPosZ;
+} 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -53,6 +59,9 @@ void B1EventAction::BeginOfEventAction(const G4Event*)
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void B1EventAction::EndOfEventAction(const G4Event*)
-{}
+{
+  auto *analysisManager = G4RootAnalysisManager::Instance();
+  analysisManager->AddNtupleRow();
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
