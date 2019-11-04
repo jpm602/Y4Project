@@ -47,7 +47,7 @@ class B1DetectorConstruction : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume *Construct();
 
   protected:
-    bool              fSiliconModel=true;
+    bool              fSiliconModel=false;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

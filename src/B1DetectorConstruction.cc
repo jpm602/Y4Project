@@ -40,6 +40,7 @@
 #include "G4PVPlacement.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
+#include "G4PVReplica.hh"
 
 #include <string>
 #include <vector>
@@ -93,7 +94,39 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
                       checkOverlaps);        // overlaps checking
 
   // Silicon model of RPCs
-  if(fSiliconModel)
+  if(!fSiliconModel)
+    {
+      // Plate material and size
+      G4double plateThick = 1.2*mm;
+      G4double detSizeXY = 10*m;
+      G4double plateSizeX = 1*cm;
+      G4Material *plateMat = nist->FindOrBuildMaterial("G4_BAKELITE");
+      
+      // Gas material and size
+      G4double gasThick = 1*mm;
+      G4double gasPressure = 1*bar;
+      G4double gasDensity = 0.5*kg/m3;
+
+      // Testing replica volumes for a single plate
+      G4int nReplicas = detSizeXY/plateSizeX; // Calculating number of replicas
+      G4Box *solidPlate =
+	new G4Box("Plate",
+		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*plateThick);
+
+       G4LogicalVolume *logicPlate =                         
+	 new G4LogicalVolume(solidPlate,          // its solid
+			     plateMat,            // its material
+			     "Plate");            // its name
+
+       G4VPhysicalVolume *replicaPlateX =
+	 new G4PVReplica("Plate",                 // its name
+			 logicPlate,              // its logical volume
+			 logicWorld,              // its mother volume
+			 kXAxis,                  // replication axis
+			 nReplicas,               // number of replicas
+			 0.5*detSizeXY);          // width
+    }
+  else
     {
       // RPC layers - sizes, separations, material
       G4double layerSizeXY = 10*m;
