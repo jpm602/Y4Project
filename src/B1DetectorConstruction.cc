@@ -48,7 +48,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B1DetectorConstruction::B1DetectorConstruction()
-: G4VUserDetectorConstruction()
+  : G4VUserDetectorConstruction()
 { }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -80,7 +80,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   
   G4Box *solidWorld =    
     new G4Box("World",                       // its name
-       0.5*worldSizeXY, 0.5*worldSizeXY, 0.5*worldSizeZ);     // its size
+	      0.5*worldSizeXY, 0.5*worldSizeXY, 0.5*worldSizeZ);     // its size
       
   G4LogicalVolume *logicWorld =                         
     new G4LogicalVolume(solidWorld,          // its solid
@@ -103,7 +103,8 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // Gas parameters
       G4double gasThick = 1*mm;
       G4double gasPressure = 1*bar;
-      G4double gasDensity = 0.5*kg/m3;
+      G4double gasDensity = 0.5*kg/m3; // Example value
+      G4Material *gasMat = worldMat; // Temporary setting until I make the proper gas
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;
@@ -115,12 +116,13 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4double detSizeXY = 10*m;
       G4double layerSep = 4*cm; // from surface of one layer to surface of the next
       G4int nFaceLayers = 6;
-      G4double faceThick = nFaceLayers*(2*plateThick + gasThick) + (nFaceLayers - 1)*layerSep;
+      G4double rpcThick = 2*plateThick + gasThick;
+      G4double faceThick = nFaceLayers*rpcThick + (nFaceLayers - 1)*layerSep;
 
       // Face envelopes
       G4Box *solidFaceEnv =
 	new G4Box("Face",                                                // its name
-		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*faceThick);           // its size
+		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*faceThick);          // its size
 
       G4LogicalVolume *logicFaceEnv =
 	new G4LogicalVolume(solidFaceEnv,         // its solid
@@ -139,7 +141,6 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			  checkOverlaps);        // overlaps checking
 
       // Sub envelopes for RPC layers
-      G4double rpcThick = 2*plateThick + gasThick;
       G4Box *solidRPCEnv =
 	new G4Box("RPC",                                              // its name
 		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*rpcThick);        // its size
@@ -150,9 +151,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    "RPC");               // its name
       logicRPCEnv->SetVisAttributes(envelopeVisAttributes);
       
-      for(unsigned int nLayers=0; nLayers<6; nLayers++)
+      for(unsigned int nLayers=0; nLayers<1; nLayers++)
 	{
-	  G4double rpcZPos = -faceThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
+	  G4double rpcZPos = -0.5*faceThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
 	  G4VPhysicalVolume *physRPCEnv = 
 	    new G4PVPlacement(0,                           // no rotation
 			      G4ThreeVector(0, 0, rpcZPos),// at each layer position in the face
@@ -177,7 +178,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       
       for(unsigned int nPlate=0; nPlate<2; nPlate++) // Loop places plates at both ends of the RPC
 	{
-	  G4ThreeVector platePos = G4ThreeVector(0, 0, -rpcThick + 0.5*plateThick);
+	  G4ThreeVector platePos = G4ThreeVector(0, 0, -0.5*rpcThick + 0.5*plateThick);
 	  if(nPlate%2==0)
 	    platePos*=-1; // flip sign to place at front/back of RPC
 	  G4VPhysicalVolume *physPlateEnv = 
@@ -201,14 +202,14 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       logicGasEnv->SetVisAttributes(envelopeVisAttributes);
 
       G4VPhysicalVolume *physGasEnv = 
-	    new G4PVPlacement(0,                     // no rotation
-			      G4ThreeVector(0, 0, 0),// middle of the RPC layer
-			      logicGasEnv,           // its logical volume
-			      "Gas",                 // its name
-			      logicRPCEnv,           // its mother  volume
-			      false,                 // no boolean operation
-			      0,                     // copy number
-			      checkOverlaps);        // overlaps checking
+	new G4PVPlacement(0,                     // no rotation
+			  G4ThreeVector(0, 0, 0),// middle of the RPC layer
+			  logicGasEnv,           // its logical volume
+			  "Gas",                 // its name
+			  logicRPCEnv,           // its mother  volume
+			  false,                 // no boolean operation
+			  0,                     // copy number
+			  checkOverlaps);        // overlaps checking
       
       // Plate replicas solid and logical volumes
       G4Box *solidPlateStrip =
@@ -224,7 +225,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	new G4Box("Plate",                                              // its name
 		  0.5*plateSizeX, 0.5*plateSizeY, 0.5*plateThick);      // its size
 
-	G4LogicalVolume *logicPlate =                         
+      G4LogicalVolume *logicPlate =                         
 	new G4LogicalVolume(solidPlate,         // its solid
 			    plateMat,           // its material
 			    "Plate");           // its name
@@ -235,19 +236,55 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
       G4VPhysicalVolume *plateReplicaStrip =
       	new G4PVReplica("Plate",                 // name
-      		       logicPlateStrip,          // logical volume
-      		       logicPlateEnv,            // mother volume
-      		       kXAxis,                   // replication axis
-      		       nReplicasX,               // number of replicas
-      		       plateSizeX);              // width
+			logicPlateStrip,          // logical volume
+			logicPlateEnv,            // mother volume
+			kXAxis,                   // replication axis
+			nReplicasX,               // number of replicas
+			plateSizeX);              // width
 
       G4VPhysicalVolume *plateReplica =
       	new G4PVReplica("Plate",                 // name
-      		       logicPlate,               // logical volume
-      		       plateReplicaStrip,        // mother volume
-      		       kYAxis,                   // replication axis
-      		       nReplicasY,               // number of replicas
-      		       plateSizeY);              // width
+			logicPlate,               // logical volume
+			plateReplicaStrip,        // mother volume
+			kYAxis,                   // replication axis
+			nReplicasY,               // number of replicas
+			plateSizeY);              // width
+
+      // Gas replicas solid and logical volumes
+      G4Box *solidGasStrip =
+	new G4Box("Gas",                                              // its name
+		  0.5*plateSizeX, 0.5*detSizeXY, 0.5*gasThick);       // its size
+
+      G4LogicalVolume *logicGasStrip =                         
+	new G4LogicalVolume(solidGasStrip,    // its solid
+			    gasMat,           // its material
+			    "Gas");           // its name
+
+      G4Box *solidGas =
+	new G4Box("Gas",                                              // its name
+		  0.5*plateSizeX, 0.5*plateSizeY, 0.5*gasThick);      // its size
+
+      G4LogicalVolume *logicGas =                         
+	new G4LogicalVolume(solidGas,         // its solid
+			    gasMat,           // its material
+			    "Gas");           // its name
+
+      // Gas placement
+      G4VPhysicalVolume *gasReplicaStrip =
+      	new G4PVReplica("Gas",                  // name
+			logicGasStrip,          // logical volume
+			logicGasEnv,            // mother volume
+			kXAxis,                 // replication axis
+			nReplicasX,             // number of replicas
+			plateSizeX);            // width
+
+      G4VPhysicalVolume *gasReplica =
+      	new G4PVReplica("Gas",                  // name
+			logicGas,               // logical volume
+			gasReplicaStrip,        // mother volume
+			kYAxis,                 // replication axis
+			nReplicasY,             // number of replicas
+			plateSizeY);            // width
 		       
 
     }
@@ -274,13 +311,13 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       
       G4VPhysicalVolume *physBoxEnvelope =
 	new G4PVPlacement(0,                    // no rotation
-			 G4ThreeVector(),       // placed at origin
-			 logicBoxEnvelope,      // its logical volume
-			 "Box",                 // its name
-			 logicWorld,            // its mother  volume
-			 false,                 // no boolean operation
-			 0,                     // copy number
-			 checkOverlaps);        // overlaps checking
+			  G4ThreeVector(),       // placed at origin
+			  logicBoxEnvelope,      // its logical volume
+			  "Box",                 // its name
+			  logicWorld,            // its mother  volume
+			  false,                 // no boolean operation
+			  0,                     // copy number
+			  checkOverlaps);        // overlaps checking
       
       // RPC layers - solid and logical volumes
       G4Box *solidLayer =
