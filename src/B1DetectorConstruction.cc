@@ -62,14 +62,19 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 {  
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
+
+  // Convert between atomic mass units and grams
+  G4double amu = 1.66054e-27*kg;
    
   // Option to switch on/off checking of volumes overlaps
   //
   G4bool checkOverlaps = true;
 
-  // Visualisation settings - need to add different colour for gas to differentiate it from plates
+  // Visualisation settings
   G4VisAttributes *envelopeVisAttributes = new G4VisAttributes(); // Needed to make envelopes invisible
   envelopeVisAttributes->SetVisibility(false);
+  G4VisAttributes *gasVisAttributes = new G4VisAttributes(); // Make gas volume green
+  gasVisAttributes->SetColour(0., 1., 0.);
 
   //     
   // World
@@ -103,8 +108,30 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // Gas parameters
       G4double gasThick = 1*mm;
       G4double gasPressure = 1*bar;
-      G4double gasDensity = 0.5*kg/m3; // Example value
-      G4Material *gasMat = worldMat; // Temporary setting until I make the proper gas
+      
+      // Gas components
+      G4Material *tetra = new G4Material("Tetrafluroethane", 4.25*kg/m3, 3, kStateGas);
+      tetra->AddElement(nist->FindOrBuildElement(6), 2);
+      tetra->AddElement(nist->FindOrBuildElement(1), 2);
+      tetra->AddElement(nist->FindOrBuildElement(9), 4);
+      G4double tetraMass = 2*12.0107*amu + 2*1.00784*amu + 4*18.998403*amu; // Mass of tetrafluoroethane in kg
+      G4double tetraPercent = 94.7; // Percentage of mixture
+	
+      G4Material *butane = nist->FindOrBuildMaterial("G4_BUTANE"); // assuming butane and iso-butane have same properties - density matches
+      G4double butaneMass = 4*12.0107*amu + 10*1.00784*amu; // Mass of butane in kg
+      G4double butanePercent = 5.0; // Percentage of mixture
+      
+      G4Material *sf6 = new G4Material("Sulphur Hexafluoride", 6.17*kg/m3, 2, kStateGas);
+      sf6->AddElement(nist->FindOrBuildElement(16), 1);
+      sf6->AddElement(nist->FindOrBuildElement(9), 6);
+      G4double sf6Mass = 32.065*amu + 6*18.998403*amu; // Mass of SF6 in kg
+      G4double sf6Percent = 0.3; // Percentage of mixture
+
+      // I have literally no clue how to work out the density of the mixed gas - I hate chemistry
+      // G4double averageMass = (tetraMass*tetraPercent + butaneMass*butanePercent + sf6Mass*sf6Percent)/100;
+      // G4double gasDensity = (gasPressure*averageMass)/CLHEP::STP_Temperature; // should this be multiplied by R or k or what??
+      // //G4Material *gasMat = new G4Material(
+      G4Material *gasMat = worldMat;
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;
@@ -113,13 +140,56 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4Material *plateMat = nist->FindOrBuildMaterial("G4_BAKELITE");
 
       // Overall detector parameters
-      G4double detSizeXY = 10*m;
-      G4double layerSep = 4*cm; // from surface of one layer to surface of the next
-      G4int nFaceLayers = 6;
+      if(fCodexb) // Full size detector
+	{
+	  detSizeXY = 10*m;
+	  layerSep = 4*cm; // from surface of one layer to surface of the next
+	  nFaceLayers = 6;
+	  nPerCentreGroup = 3;
+	  nCentreLayers = 5;
+	}
+      else // Demonstrator module
+      	{
+      	  detSizeXY = 2*m;
+      	  layerSep = 4*cm;
+      	  nFaceLayers = 3;
+      	  nPerCentreGroup = 3;
+      	  nCentreLayers = 1;
+      	}
       G4double rpcThick = 2*plateThick + gasThick;
       G4double faceThick = nFaceLayers*rpcThick + (nFaceLayers - 1)*layerSep;
+      G4double groupThick = nPerCentreGroup*rpcThick + (nPerCentreGroup - 1)*layerSep;
 
+      // Centre Envelope
+      G4Box *solidCentreEnv =
+	new G4Box("Centre Volume",                                       // its name
+		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*detSizeXY);          // its size
+
+      G4LogicalVolume *logicCentreEnv =
+	new G4LogicalVolume(solidCentreEnv,       // its solid
+			    worldMat,             // its material
+			    "Centre Volume");     // its name
+      logicCentreEnv->SetVisAttributes(envelopeVisAttributes);
+
+      G4VPhysicalVolume *physCentreEnv = 
+	new G4PVPlacement(0,                     // no rotation
+			  G4ThreeVector(),       // at (0,0,0)
+			  logicCentreEnv,        // its logical volume
+			  "Centre Volume",       // its name
+			  logicWorld,            // its mother  volume
+			  false,                 // no boolean operation
+			  0,                     // copy number
+			  checkOverlaps);        // overlaps checking
+      
       // Face envelopes
+      std::vector<G4ThreeVector> facePos; // Positions of faces
+      facePos.push_back(G4ThreeVector(0, 0, -0.5*detSizeXY - 0.5*faceThick));
+      facePos.push_back(G4ThreeVector(0, 0, 0.5*detSizeXY + 0.5*faceThick));
+      facePos.push_back(G4ThreeVector(-0.5*detSizeXY - 0.5*faceThick, 0, 0));
+      facePos.push_back(G4ThreeVector(0.5*detSizeXY + 0.5*faceThick, 0, 0));
+      facePos.push_back(G4ThreeVector(0, -0.5*detSizeXY - 0.5*faceThick, 0));
+      facePos.push_back(G4ThreeVector(0, 0.5*detSizeXY + 0.5*faceThick, 0));
+      
       G4Box *solidFaceEnv =
 	new G4Box("Face",                                                // its name
 		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*faceThick);          // its size
@@ -129,16 +199,52 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    worldMat,             // its material
 			    "Face");              // its name
       logicFaceEnv->SetVisAttributes(envelopeVisAttributes);
+      
+      for(unsigned int nFace=0; nFace<facePos.size(); nFace++) // Place the six cube faces
+	{
+	  // Rotation matrix
+	  G4RotationMatrix *rotFace = new G4RotationMatrix();
+	  if(facePos.at(nFace).y()!=0) // Rotate for top/bottom face
+	    rotFace->rotateX(90*deg);
+	  if(facePos.at(nFace).x()!=0) // Rotate for side faces
+	    rotFace->rotateY(90*deg);
+	  G4VPhysicalVolume *physFaceEnv = 
+	    new G4PVPlacement(rotFace,               // rotation
+			      facePos.at(nFace),     // at the relevant face position
+			      logicFaceEnv,          // its logical volume
+			      "Face",                // its name
+			      logicWorld,            // its mother  volume
+			      false,                 // no boolean operation
+			      nFace,                 // copy number
+			      checkOverlaps);        // overlaps checking
+	}
 
-      G4VPhysicalVolume *physFaceEnv = 
-	new G4PVPlacement(0,                     // no rotation
-			  G4ThreeVector(0, 0, 0),// at (0,0,0)
-			  logicFaceEnv,          // its logical volume
-			  "Face",                // its name
-			  logicWorld,            // its mother  volume
-			  false,                 // no boolean operation
-			  0,                     // copy number
-			  checkOverlaps);        // overlaps checking
+      // Central RPC groups envelopes
+      G4Box *solidCentreGroup =
+	new G4Box("Group",                                       // its name
+		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*groupThick); // its size
+
+      G4LogicalVolume *logicCentreGroup =
+	new G4LogicalVolume(solidCentreGroup,     // its solid
+			    worldMat,             // its material
+			    "Group");             // its name
+      logicCentreGroup->SetVisAttributes(envelopeVisAttributes);
+      
+      for(unsigned int nGroup=0; nGroup<nCentreLayers; nGroup++) // Places the centre RPC groups
+	{
+	  G4double groupSep = (detSizeXY - nCentreLayers*groupThick)/(nCentreLayers + 1); // Equal spacing along the length of the detector
+	  G4double groupZPos = -0.5*detSizeXY + 0.5*groupThick + nGroup*(groupThick + groupSep);
+
+	  G4VPhysicalVolume *physGroupEnv = 
+	    new G4PVPlacement(0,                             // no rotation
+			      G4ThreeVector(0, 0, groupZPos),// at the relevant group position
+			      logicCentreGroup,              // its logical volume
+			      "Group",                       // its name
+			      logicCentreEnv,                // its mother  volume
+			      false,                         // no boolean operation
+			      nGroup,                        // copy number
+			      checkOverlaps);                // overlaps checking
+	}
 
       // Sub envelopes for RPC layers
       G4Box *solidRPCEnv =
@@ -151,7 +257,8 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    "RPC");               // its name
       logicRPCEnv->SetVisAttributes(envelopeVisAttributes);
       
-      for(unsigned int nLayers=0; nLayers<1; nLayers++)
+      // Placing RPCs in face layers
+      for(unsigned int nLayers=0; nLayers<nFaceLayers; nLayers++)
 	{
 	  G4double rpcZPos = -0.5*faceThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
 	  G4VPhysicalVolume *physRPCEnv = 
@@ -164,8 +271,22 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			      nLayers,                     // copy number
 			      checkOverlaps);              // overlaps checking
 	}
-
-      // Sub envelopes for plates and gas
+      // Placing RPCs inside groups in central volume
+      for(unsigned int nLayers=0; nLayers<nPerCentreGroup; nLayers++)
+	{
+	  G4double rpcZPos = -0.5*groupThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
+	  G4VPhysicalVolume *physRPCCentreEnv = 
+	    new G4PVPlacement(0,                           // no rotation
+			      G4ThreeVector(0, 0, rpcZPos),// at each layer position in the group
+			      logicRPCEnv,                 // its logical volume
+			      "RPC",                       // its name
+			      logicCentreGroup,            // its mother  volume
+			      false,                       // no boolean operation
+			      nLayers,                     // copy number
+			      checkOverlaps);              // overlaps checking
+	}
+      
+      // Sub envelopes for plates and gas inside RPC
       G4Box *solidPlateEnv =
 	new G4Box("Plate",                                              // its name
 		  0.5*detSizeXY, 0.5*detSizeXY, 0.5*plateThick);        // its size
@@ -175,8 +296,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    worldMat,           // its material
 			    "Plate");           // its name
       logicPlateEnv->SetVisAttributes(envelopeVisAttributes);
-      
-      for(unsigned int nPlate=0; nPlate<2; nPlate++) // Loop places plates at both ends of the RPC
+
+      // Loop places plates at both ends of the RPC
+      for(unsigned int nPlate=0; nPlate<2; nPlate++)
 	{
 	  G4ThreeVector platePos = G4ThreeVector(0, 0, -0.5*rpcThick + 0.5*plateThick);
 	  if(nPlate%2==0)
@@ -220,6 +342,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	new G4LogicalVolume(solidPlateStrip,    // its solid
 			    plateMat,           // its material
 			    "Plate");           // its name
+      logicPlateStrip->SetVisAttributes(envelopeVisAttributes);
 
       G4Box *solidPlate =
 	new G4Box("Plate",                                              // its name
@@ -235,7 +358,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4int nReplicasY = detSizeXY/plateSizeY;
 
       G4VPhysicalVolume *plateReplicaStrip =
-      	new G4PVReplica("Plate",                 // name
+      	new G4PVReplica("Plate",                  // name
 			logicPlateStrip,          // logical volume
 			logicPlateEnv,            // mother volume
 			kXAxis,                   // replication axis
@@ -243,7 +366,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			plateSizeX);              // width
 
       G4VPhysicalVolume *plateReplica =
-      	new G4PVReplica("Plate",                 // name
+      	new G4PVReplica("Plate",                  // name
 			logicPlate,               // logical volume
 			plateReplicaStrip,        // mother volume
 			kYAxis,                   // replication axis
@@ -259,6 +382,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	new G4LogicalVolume(solidGasStrip,    // its solid
 			    gasMat,           // its material
 			    "Gas");           // its name
+      logicGasStrip->SetVisAttributes(envelopeVisAttributes);
 
       G4Box *solidGas =
 	new G4Box("Gas",                                              // its name
@@ -268,6 +392,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	new G4LogicalVolume(solidGas,         // its solid
 			    gasMat,           // its material
 			    "Gas");           // its name
+      logicGas->SetVisAttributes(gasVisAttributes);
 
       // Gas placement
       G4VPhysicalVolume *gasReplicaStrip =

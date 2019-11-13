@@ -40,14 +40,20 @@ class G4LogicalVolume;
 
 class B1DetectorConstruction : public G4VUserDetectorConstruction
 {
-  public:
-    B1DetectorConstruction();
-    virtual ~B1DetectorConstruction();
-
-    virtual G4VPhysicalVolume *Construct();
-
-  protected:
-    bool              fSiliconModel=false;
+public:
+  B1DetectorConstruction();
+  virtual ~B1DetectorConstruction();
+  
+  virtual G4VPhysicalVolume *Construct();
+  
+protected:
+  bool fSiliconModel = false;
+  bool fCodexb = true;
+  G4double detSizeXY;
+  G4double layerSep;
+  G4int nFaceLayers;
+  G4int nPerCentreGroup;
+  G4int nCentreLayers;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
