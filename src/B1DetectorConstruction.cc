@@ -63,8 +63,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   // Get nist material manager
   G4NistManager* nist = G4NistManager::Instance();
 
-  // Convert between atomic mass units and grams
-  G4double amu = 1.66054e-27*kg;
+  // Convert between atomic mass units and kg, set Boltzmann constant in SI units
+  G4double amu = 1.66054e-27;
+  G4double kBoltzmann = 1.38064582e-23;
    
   // Option to switch on/off checking of volumes overlaps
   //
@@ -108,6 +109,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // Gas parameters
       G4double gasThick = 1*mm;
       G4double gasPressure = 1*bar;
+      gasPressure/= hep_pascal; // Convert to pascal
       
       // Gas components
       G4Material *tetra = new G4Material("Tetrafluroethane", 4.25*kg/m3, 3, kStateGas);
@@ -127,11 +129,12 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4double sf6Mass = 32.065*amu + 6*18.998403*amu; // Mass of SF6 in kg
       G4double sf6Percent = 0.3; // Percentage of mixture
 
-      // I have literally no clue how to work out the density of the mixed gas - I hate chemistry
-      // G4double averageMass = (tetraMass*tetraPercent + butaneMass*butanePercent + sf6Mass*sf6Percent)/100;
-      // G4double gasDensity = (gasPressure*averageMass)/CLHEP::STP_Temperature; // should this be multiplied by R or k or what??
-      // //G4Material *gasMat = new G4Material(
-      G4Material *gasMat = worldMat;
+      G4double averageMass = (tetraMass*tetraPercent + butaneMass*butanePercent + sf6Mass*sf6Percent)/100;
+      G4double gasDensity = (gasPressure*averageMass)/(kBoltzmann*CLHEP::STP_Temperature);
+      G4Material *gasMat = new G4Material("rpcGas", gasDensity, 3, kStateGas, CLHEP::STP_Temperature, gasPressure);
+      gasMat->AddMaterial(tetra, tetraPercent*perCent);
+      gasMat->AddMaterial(butane, butanePercent*perCent);
+      gasMat->AddMaterial(sf6, sf6Percent*perCent);
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;
@@ -233,7 +236,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       for(unsigned int nGroup=0; nGroup<nCentreLayers; nGroup++) // Places the centre RPC groups
 	{
 	  G4double groupSep = (detSizeXY - nCentreLayers*groupThick)/(nCentreLayers + 1); // Equal spacing along the length of the detector
-	  G4double groupZPos = -0.5*detSizeXY + 0.5*groupThick + nGroup*(groupThick + groupSep);
+	  G4double groupZPos = -0.5*detSizeXY + groupSep + 0.5*groupThick + nGroup*(groupThick + groupSep);
 
 	  G4VPhysicalVolume *physGroupEnv = 
 	    new G4PVPlacement(0,                             // no rotation
@@ -419,7 +422,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // RPC layers - sizes, separations, material
       G4double layerSizeXY = 10*m;
       G4double layerSizeZ = 2*cm;
-      G4double layerSep = 4*cm;
+      layerSep = 4*cm;
       G4double tripletSep = 1.55*m;
       G4Material *layerMat = nist->FindOrBuildMaterial("G4_Si");
 
