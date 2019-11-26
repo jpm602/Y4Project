@@ -49,9 +49,9 @@ class B1EventAction : public G4UserEventAction
     virtual void BeginOfEventAction(const G4Event *event);
     virtual void EndOfEventAction(const G4Event *event);
 
-    virtual void HitPosX(G4double value){hitPosX->push_back(value);};
-    virtual void HitPosY(G4double value){hitPosY->push_back(value);};
-    virtual void HitPosZ(G4double value){hitPosZ->push_back(value);};
+    virtual void HitPos(G4double x, G4double y, G4double z);
+  
+    virtual void EnergyDep(G4double value){edep->push_back(value);};
 
   private:
     B1RunAction *fRunAction;
@@ -59,6 +59,7 @@ class B1EventAction : public G4UserEventAction
     std::vector<double> *hitPosX;
     std::vector<double> *hitPosY;
     std::vector<double> *hitPosZ;
+    std::vector<double> *edep;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

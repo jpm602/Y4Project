@@ -64,11 +64,13 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  if(volume->GetName() == "Layer" && edepStep!=0)
+  if(volume->GetName() == "Gas" && edepStep!=0)
     {
-      fEventAction->HitPosX(step->GetPostStepPoint()->GetPosition().x());
-      fEventAction->HitPosY(step->GetPostStepPoint()->GetPosition().y());
-      fEventAction->HitPosZ(step->GetPostStepPoint()->GetPosition().z());
+      // Get relevant copy numbers to identify which RPC the hit is in
+      
+      // Save position of hit
+      G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
+      fEventAction->HitPos(pos.x(), pos.y(), pos.z());
     }
 }
 

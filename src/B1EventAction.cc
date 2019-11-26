@@ -44,6 +44,7 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   hitPosX = &runAction->hitPosX;
   hitPosY = &runAction->hitPosY;
   hitPosZ = &runAction->hitPosZ;
+  edep = &runAction->edep;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -65,3 +66,11 @@ void B1EventAction::EndOfEventAction(const G4Event*)
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void B1EventAction::HitPos(G4double x, G4double y, G4double z)
+{
+  hitPosX->push_back(x);
+  hitPosY->push_back(y);
+  hitPosZ->push_back(z);
+}
+
