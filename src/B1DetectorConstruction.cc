@@ -330,6 +330,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    worldMat,           // its material
 			    "Gas");             // its name
       logicGasEnv->SetVisAttributes(envelopeVisAttributes);
+      logicGasEnv->SetFieldManager(emFieldSetup->GetLocalFieldManager(), true);
 
       G4VPhysicalVolume *physGasEnv = 
 	new G4PVPlacement(0,                     // no rotation
@@ -401,7 +402,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    gasMat,           // its material
 			    "Gas");           // its name
       logicGas->SetVisAttributes(gasVisAttributes);
-      logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
+      //logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
 
       // Gas placement
       G4VPhysicalVolume *gasReplicaStrip =
