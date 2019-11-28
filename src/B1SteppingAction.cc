@@ -66,8 +66,8 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 
   if(volume->GetName() == "Gas" && edepStep!=0)
     {
-      // Get relevant copy numbers to identify which RPC the hit is in
-      
+      // Save energy deposition
+      fEventAction->EnergyDep(edepStep);
       // Save position of hit
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
       fEventAction->HitPos(pos.x(), pos.y(), pos.z());

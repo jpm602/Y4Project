@@ -29,6 +29,8 @@
 
 #include "B1DetectorConstruction.hh"
 
+#include "B1ElectricFieldSetup.hh"
+
 #include "G4RunManager.hh"
 #include "G4NistManager.hh"
 #include "G4Box.hh"
@@ -141,6 +143,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4double plateSizeX = 2*m;
       G4double plateSizeY = 1*m;
       G4Material *plateMat = nist->FindOrBuildMaterial("G4_BAKELITE");
+
+      // Electric field
+      B1ElectricFieldSetup *emFieldSetup = new B1ElectricFieldSetup();
 
       // Overall detector parameters
       if(fCodexb) // Full size detector
@@ -396,6 +401,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    gasMat,           // its material
 			    "Gas");           // its name
       logicGas->SetVisAttributes(gasVisAttributes);
+      logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
 
       // Gas placement
       G4VPhysicalVolume *gasReplicaStrip =
