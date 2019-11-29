@@ -71,6 +71,8 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
       // Save position of hit
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
       fEventAction->HitPos(pos.x(), pos.y(), pos.z());
+      // Save time since start of event of hit
+      fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime());
     }
 }
 

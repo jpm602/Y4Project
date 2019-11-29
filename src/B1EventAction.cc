@@ -45,6 +45,7 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   hitPosY = &runAction->hitPosY;
   hitPosZ = &runAction->hitPosZ;
   edep = &runAction->edep;
+  time = &runAction->time;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

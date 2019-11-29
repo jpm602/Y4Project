@@ -53,6 +53,8 @@ class B1EventAction : public G4UserEventAction
   
     virtual void EnergyDep(G4double value){edep->push_back(value);};
 
+    virtual void Time(G4double value){time->push_back(value);};
+
   private:
     B1RunAction *fRunAction;
 
@@ -60,6 +62,7 @@ class B1EventAction : public G4UserEventAction
     std::vector<double> *hitPosY;
     std::vector<double> *hitPosZ;
     std::vector<double> *edep;
+    std::vector<double> *time;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

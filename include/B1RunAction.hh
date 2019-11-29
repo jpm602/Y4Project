@@ -58,6 +58,7 @@ class B1RunAction : public G4UserRunAction
     std::vector<double> hitPosY;
     std::vector<double> hitPosZ;
     std::vector<double> edep;
+    std::vector<double> time;
 
   private:
   
