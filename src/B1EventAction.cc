@@ -41,11 +41,17 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
 : G4UserEventAction(),
   fRunAction(runAction)
 {
+  // Pass variables over to run action
   hitPosX = &runAction->hitPosX;
   hitPosY = &runAction->hitPosY;
   hitPosZ = &runAction->hitPosZ;
   edep = &runAction->edep;
   time = &runAction->time;
+  deltaEnergy = &runAction->deltaEnergy;
+  primaryPosX = &runAction->primaryPosX;
+  primaryPosY = &runAction->primaryPosY;
+  primaryPosZ = &runAction->primaryPosZ;
+  primaryTime = &runAction->primaryTime;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -75,3 +81,9 @@ void B1EventAction::HitPos(G4double x, G4double y, G4double z)
   hitPosZ->push_back(z);
 }
 
+void B1EventAction::PrimaryPos(G4double x, G4double y, G4double z)
+{
+  primaryPosX->push_back(x);
+  primaryPosY->push_back(y);
+  primaryPosZ->push_back(z);
+}

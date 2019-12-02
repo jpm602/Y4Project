@@ -50,10 +50,11 @@ class B1EventAction : public G4UserEventAction
     virtual void EndOfEventAction(const G4Event *event);
 
     virtual void HitPos(G4double x, G4double y, G4double z);
-  
     virtual void EnergyDep(G4double value){edep->push_back(value);};
-
     virtual void Time(G4double value){time->push_back(value);};
+    virtual void DeltaEnergy(G4double value){deltaEnergy->push_back(value);};
+    virtual void PrimaryPos(G4double x, G4double y, G4double z);
+    virtual void PrimaryTime(G4double value){primaryTime->push_back(value);};
 
   private:
     B1RunAction *fRunAction;
@@ -63,6 +64,11 @@ class B1EventAction : public G4UserEventAction
     std::vector<double> *hitPosZ;
     std::vector<double> *edep;
     std::vector<double> *time;
+    std::vector<double> *deltaEnergy;
+    std::vector<double> *primaryPosX;
+    std::vector<double> *primaryPosY;
+    std::vector<double> *primaryPosZ;
+    std::vector<double> *primaryTime;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

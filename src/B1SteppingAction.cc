@@ -64,9 +64,19 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  if(volume->GetName() == "Gas" && edepStep!=0)
+  if(volume->GetName() == "Gas" && step->GetTrack()->GetParentID()==0) // Check in gas and check if primary particle
     {
-      // Save energy deposition
+      // Save delta energy of primary particle in gas
+      fEventAction->DeltaEnergy(step->GetDeltaEnergy());
+      // Save position of hit
+      G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
+      fEventAction->PrimaryPos(pos.x(), pos.y(), pos.z());
+      // Save time since start of event of hit
+      fEventAction->PrimaryTime(step->GetPostStepPoint()->GetGlobalTime());
+    }
+  if(volume->GetName() == "Plate" && edepStep!=0) // Track electrons that hit plate
+    {
+      // Save energy deposition of particles produced by primary
       fEventAction->EnergyDep(edepStep);
       // Save position of hit
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();

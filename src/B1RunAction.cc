@@ -70,6 +70,11 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
   analysisManager->CreateNtupleDColumn("HitPosZ", hitPosZ);
   analysisManager->CreateNtupleDColumn("EnergyDeposition", edep);
   analysisManager->CreateNtupleDColumn("Time", time);
+  analysisManager->CreateNtupleDColumn("PrimaryPosX", primaryPosX);
+  analysisManager->CreateNtupleDColumn("PrimaryPosY", primaryPosY);
+  analysisManager->CreateNtupleDColumn("PrimaryPosZ", primaryPosZ);
+  analysisManager->CreateNtupleDColumn("PrimaryDeltaEnergy", deltaEnergy);
+  analysisManager->CreateNtupleDColumn("PrimaryTime", primaryTime);
 
   analysisManager->FinishNtuple();
   

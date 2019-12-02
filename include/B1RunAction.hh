@@ -59,6 +59,11 @@ class B1RunAction : public G4UserRunAction
     std::vector<double> hitPosZ;
     std::vector<double> edep;
     std::vector<double> time;
+    std::vector<double> deltaEnergy;
+    std::vector<double> primaryPosX;
+    std::vector<double> primaryPosY;
+    std::vector<double> primaryPosZ;
+    std::vector<double> primaryTime;
 
   private:
   
