@@ -48,10 +48,13 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   edep = &runAction->edep;
   time = &runAction->time;
   deltaEnergy = &runAction->deltaEnergy;
-  primaryPosX = &runAction->primaryPosX;
-  primaryPosY = &runAction->primaryPosY;
-  primaryPosZ = &runAction->primaryPosZ;
-  primaryTime = &runAction->primaryTime;
+  gasPosX = &runAction->gasPosX;
+  gasPosY = &runAction->gasPosY;
+  gasPosZ = &runAction->gasPosZ;
+  gasTime = &runAction->gasTime;
+  particleID = &runAction->particleID;
+  trackID = &runAction->trackID;
+  parentID = &runAction->parentID;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -81,9 +84,16 @@ void B1EventAction::HitPos(G4double x, G4double y, G4double z)
   hitPosZ->push_back(z);
 }
 
-void B1EventAction::PrimaryPos(G4double x, G4double y, G4double z)
+void B1EventAction::GasPos(G4double x, G4double y, G4double z)
 {
-  primaryPosX->push_back(x);
-  primaryPosY->push_back(y);
-  primaryPosZ->push_back(z);
+  gasPosX->push_back(x);
+  gasPosY->push_back(y);
+  gasPosZ->push_back(z);
+}
+
+void B1EventAction::IDNumbers(G4int pID, G4int tID, G4int prntID)
+{
+  particleID->push_back(pID);
+  trackID->push_back(tID);
+  parentID->push_back(prntID);
 }

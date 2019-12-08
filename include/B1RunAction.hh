@@ -60,10 +60,13 @@ class B1RunAction : public G4UserRunAction
     std::vector<double> edep;
     std::vector<double> time;
     std::vector<double> deltaEnergy;
-    std::vector<double> primaryPosX;
-    std::vector<double> primaryPosY;
-    std::vector<double> primaryPosZ;
-    std::vector<double> primaryTime;
+    std::vector<double> gasPosX;
+    std::vector<double> gasPosY;
+    std::vector<double> gasPosZ;
+    std::vector<double> gasTime;
+    std::vector<int> particleID;
+    std::vector<int> trackID;
+    std::vector<int> parentID;
 
   private:
   

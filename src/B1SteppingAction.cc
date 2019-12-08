@@ -64,20 +64,26 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  if(volume->GetName() == "Gas" && step->GetTrack()->GetParentID()==0) // Check in gas and check if primary particle
+  if(volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0) // Check in gas and check if energy loss occurs
     {
-      // Save delta energy of primary particle in gas
+      // Save delta energy of particle in gas
       fEventAction->DeltaEnergy(step->GetDeltaEnergy());
+      // Save particle ID, track ID, and parent ID
+      G4Track *track = step->GetTrack();
+      fEventAction->IDNumbers(track->GetDynamicParticle()->GetPDGcode(), track->GetTrackID(), track->GetParentID());
       // Save position of hit
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-      fEventAction->PrimaryPos(pos.x(), pos.y(), pos.z());
+      fEventAction->GasPos(pos.x(), pos.y(), pos.z());
       // Save time since start of event of hit
-      fEventAction->PrimaryTime(step->GetPostStepPoint()->GetGlobalTime());
+      fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime());
     }
   if(volume->GetName() == "Plate" && edepStep!=0) // Track electrons that hit plate
     {
-      // Save energy deposition of particles produced by primary
+      // Save energy deposition of particles hitting the plate
       fEventAction->EnergyDep(edepStep);
+      // Save particle ID, track ID, and parent ID
+      G4Track *track = step->GetTrack();
+      fEventAction->IDNumbers(track->GetDynamicParticle()->GetPDGcode(), track->GetTrackID(), track->GetParentID());
       // Save position of hit
       G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
       fEventAction->HitPos(pos.x(), pos.y(), pos.z());

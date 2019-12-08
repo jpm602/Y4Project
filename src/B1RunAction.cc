@@ -65,16 +65,19 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
 
   analysisManager->CreateNtuple("output", "output");
   
+  analysisManager->CreateNtupleIColumn("ParticleID", particleID);
+  analysisManager->CreateNtupleIColumn("TrackID", trackID);
+  analysisManager->CreateNtupleIColumn("ParentID", parentID);
   analysisManager->CreateNtupleDColumn("HitPosX", hitPosX);
   analysisManager->CreateNtupleDColumn("HitPosY", hitPosY);
   analysisManager->CreateNtupleDColumn("HitPosZ", hitPosZ);
   analysisManager->CreateNtupleDColumn("EnergyDeposition", edep);
   analysisManager->CreateNtupleDColumn("Time", time);
-  analysisManager->CreateNtupleDColumn("PrimaryPosX", primaryPosX);
-  analysisManager->CreateNtupleDColumn("PrimaryPosY", primaryPosY);
-  analysisManager->CreateNtupleDColumn("PrimaryPosZ", primaryPosZ);
-  analysisManager->CreateNtupleDColumn("PrimaryDeltaEnergy", deltaEnergy);
-  analysisManager->CreateNtupleDColumn("PrimaryTime", primaryTime);
+  analysisManager->CreateNtupleDColumn("GasPosX", gasPosX);
+  analysisManager->CreateNtupleDColumn("GasPosY", gasPosY);
+  analysisManager->CreateNtupleDColumn("GasPosZ", gasPosZ);
+  analysisManager->CreateNtupleDColumn("GasDeltaEnergy", deltaEnergy);
+  analysisManager->CreateNtupleDColumn("GasTime", gasTime);
 
   analysisManager->FinishNtuple();
   
