@@ -8,14 +8,17 @@ int energy()
   TFile *file = new TFile("output.root");
   TTree *tree = (TTree*)file->Get("output");
   Reader reader(tree);
+  std::cout << "file opened and tree given to reader" << std::endl;
 
   std::vector<std::vector<int>> parentsAllEvents; // Vector of vectors containing parent IDs for each event
   std::vector<std::vector<int>> tracksAllEvents; // Vector of vectors containing track IDs for each event
   std::vector<std::vector<double>> edepAllEvents; // Vector of vectors containing summed energy depositions per parent for each event
+  std::cout << "vectors of vectors created" << std::endl;
   
   // Loop over events to get parent and track IDs for each events
+  Long64_t nentries = reader.fChain->GetEntries(); // Crashes here for some reason - segfault in GetEntries()??
   std::cout << "starting ID loop" << std::endl;
-  for(unsigned int ientry=0; ientry<reader.fChain->GetEntries(); ientry++) // Crashes here for some reason - segfault in GetEntries()?? - need to check old code
+  for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
       reader.GetEntry(ientry); // Get current event
       std::vector<int> parentsSingleEvent; // Vector of parent IDs for this event
@@ -40,7 +43,7 @@ int energy()
   
   // Loop over events to sum energies for each parent and store in a vector of vectors that corresponds to the previous ones
   std::cout << "starting energy loop" << std::endl;
-  for(unsigned int ientry=0; ientry<reader.fChain->GetEntries(); ientry++)
+  for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
       reader.GetEntry(ientry); // Get current event
       std::vector<double> edepSingleEvent; // Vector of summed energy depositions per parent for this event
