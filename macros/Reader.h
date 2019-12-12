@@ -13,8 +13,7 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include "vector"
-#include "vector"
+#include <vector>
 
 class Reader {
 public :
@@ -24,19 +23,19 @@ public :
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
-   vector<int>     *ParticleID;
-   vector<int>     *TrackID;
-   vector<int>     *ParentID;
-   vector<double>  *HitPosX;
-   vector<double>  *HitPosY;
-   vector<double>  *HitPosZ;
-   vector<double>  *EnergyDeposition;
-   vector<double>  *Time;
-   vector<double>  *GasPosX;
-   vector<double>  *GasPosY;
-   vector<double>  *GasPosZ;
-   vector<double>  *GasDeltaEnergy;
-   vector<double>  *GasTime;
+   std::vector<int>     *ParticleID;
+   std::vector<int>     *TrackID;
+   std::vector<int>     *ParentID;
+   std::vector<double>  *HitPosX;
+   std::vector<double>  *HitPosY;
+   std::vector<double>  *HitPosZ;
+   std::vector<double>  *EnergyDeposition;
+   std::vector<double>  *Time;
+   std::vector<double>  *GasPosX;
+   std::vector<double>  *GasPosY;
+   std::vector<double>  *GasPosZ;
+   std::vector<double>  *GasDeltaEnergy;
+   std::vector<double>  *GasTime;
 
    // List of branches
    TBranch        *b_ParticleID;   //!

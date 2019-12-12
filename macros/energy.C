@@ -1,11 +1,20 @@
 #include "Reader.h" // Reads TTree object
+#include "TString.h" // For filename string
 
+#include <iostream> // std::cout
 #include <algorithm> // std::find
 
-int energy()
+int main(int argc, char** argv)
 {
-  // Open file, get tree, give it to reader
-  TFile *file = new TFile("output.root");
+  // Open file
+  TString filename;
+  if(argc>1)
+    filename = argv[1];
+  else
+    filename = "output.root";
+  TFile *file = new TFile(filename);
+
+  // Get tree and give it to reader
   TTree *tree = (TTree*)file->Get("output");
   Reader reader(tree);
   std::cout << "file opened and tree given to reader" << std::endl;
@@ -16,14 +25,14 @@ int energy()
   std::cout << "vectors of vectors created" << std::endl;
   
   // Loop over events to get parent and track IDs for each events
-  Long64_t nentries = reader.fChain->GetEntries(); // Crashes here for some reason - segfault in GetEntries()??
+  Long64_t nentries = reader.fChain->GetEntries();
   std::cout << "starting ID loop" << std::endl;
   for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
       reader.GetEntry(ientry); // Get current event
       std::vector<int> parentsSingleEvent; // Vector of parent IDs for this event
       std::vector<int> tracksSingleEvent; // Vector of track IDs for this event
-      
+
       // Loop over parent IDs in this event
       for(unsigned int i=0; i<reader.ParentID->size(); i++)
 	{
@@ -46,11 +55,13 @@ int energy()
   for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
       reader.GetEntry(ientry); // Get current event
+      std::cout << "on entry " << ientry << " out of " << nentries << std::endl;
       std::vector<double> edepSingleEvent; // Vector of summed energy depositions per parent for this event
       
       // Loop over number of parent IDs to set starting energy values to zero
       for(unsigned int i=0; i<parentsAllEvents.at(ientry).size(); i++)
 	edepSingleEvent.push_back(0.);
+      
       // Loop over parent IDs to sum up energy deposition for each
       for(unsigned int i=0; i<reader.ParentID->size(); i++)
       	{
