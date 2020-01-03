@@ -64,31 +64,34 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  if(volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0) // Check in gas and check if energy loss occurs
+  // Tracking criteria - done like this for easier analysis
+  if((volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0) || (volume->GetName() == "Plate" && edepStep!=0))
     {
-      // Save delta energy of particle in gas
-      fEventAction->DeltaEnergy(step->GetDeltaEnergy());
       // Save particle ID, track ID, and parent ID
       G4Track *track = step->GetTrack();
       fEventAction->IDNumbers(track->GetDynamicParticle()->GetPDGcode(), track->GetTrackID(), track->GetParentID());
-      // Save position of hit
-      G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-      fEventAction->GasPos(pos.x(), pos.y(), pos.z());
-      // Save time since start of event of hit
-      fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime());
-    }
-  if(volume->GetName() == "Plate" && edepStep!=0) // Track electrons that hit plate
-    {
-      // Save energy deposition of particles hitting the plate
-      fEventAction->EnergyDep(edepStep);
-      // Save particle ID, track ID, and parent ID
-      G4Track *track = step->GetTrack();
-      fEventAction->IDNumbers(track->GetDynamicParticle()->GetPDGcode(), track->GetTrackID(), track->GetParentID());
-      // Save position of hit
-      G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-      fEventAction->HitPos(pos.x(), pos.y(), pos.z());
-      // Save time since start of event of hit
-      fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime());
+      // Gas tracking for initial particle interactions
+      if(volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0)
+	{
+	  // Save delta energy of particle in gas
+	  fEventAction->DeltaEnergy(step->GetDeltaEnergy());
+	  // Save position of hit
+	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
+	  fEventAction->GasPos(pos.x(), pos.y(), pos.z());
+	  // Save time since start of event of hit
+	  fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime());
+	}
+      // Plate tracking for final particles that are read out
+      if(volume->GetName() == "Plate" && edepStep!=0)
+	{
+	  // Save energy deposition of particles hitting the plate
+	  fEventAction->EnergyDep(edepStep);
+	  // Save position of hit
+	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
+	  fEventAction->HitPos(pos.x(), pos.y(), pos.z());
+	  // Save time since start of event of hit
+	  fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime());
+	}
     }
 }
 

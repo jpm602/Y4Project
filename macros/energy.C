@@ -1,5 +1,7 @@
 #include "Reader.h" // Reads TTree object
 #include "TString.h" // For filename string
+#include "TCanvas.h" // For graph canvases
+#include "TH1F.h" // For 1D histograms
 
 #include <iostream> // std::cout
 #include <algorithm> // std::find
@@ -55,27 +57,32 @@ int main(int argc, char** argv)
   for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
       reader.GetEntry(ientry); // Get current event
-      std::cout << "on entry " << ientry << " out of " << nentries << std::endl;
       std::vector<double> edepSingleEvent; // Vector of summed energy depositions per parent for this event
       
       // Loop over number of parent IDs to set starting energy values to zero
       for(unsigned int i=0; i<parentsAllEvents.at(ientry).size(); i++)
 	edepSingleEvent.push_back(0.);
-      
+
+      std::cout << reader.ParentID->size() << " " << reader.EnergyDeposition->size() << std::endl;
       // Loop over parent IDs to sum up energy deposition for each
       for(unsigned int i=0; i<reader.ParentID->size(); i++)
       	{
 	  // Find element in parent ID vector that contains the ID of the current interaction and then save the energy deposition to it
 	  std::vector<int>::iterator it = std::find(parentsAllEvents.at(ientry).begin(), parentsAllEvents.at(ientry).end(), reader.ParentID->at(i));
-	  int element = std::distance(parentsAllEvents.at(ientry).begin(), it); // Uses iterator returned by find to get element of vector
-	  edepSingleEvent.at(element)+=reader.EnergyDeposition->at(i);
+	  if(it!=parentsAllEvents.at(ientry).end())
+	    {
+	      int element = std::distance(parentsAllEvents.at(ientry).begin(), it); // Uses iterator returned by find to get element of vector
+	      edepSingleEvent.at(element)+=reader.EnergyDeposition->at(i); // this should work after changing code - problem with way IDs are recorded
+	    }
       	}
       
       // Store energy deposition for a whole event in a vector of vectors
       edepAllEvents.push_back(edepSingleEvent);
     }
   std::cout << "finished energy loop" << std::endl;
-  
+
+  // Make histogram for energy per parent
+  TH1F *hEnergyPerParent = new TH1F("energyPerParent", "Energy Deposited Per Parent Particle", 100, 0, 0);
   return 0;
 }
 // Need to do total energy per parent and total energy per parent per particle
