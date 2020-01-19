@@ -39,7 +39,7 @@ int main(int argc, char** argv)
     {
       if(ientry%100==0) // Progress meter
 	std::cout << "on entry " << ientry << " out of " << nentries << std::endl;
-      reader.GetEntry(ientry);
+      reader.GetEntry(ientry); // Get current event
       
       std::vector<int> particleIDs; // Vector of particle IDs for this event
       std::vector<double> edep; // Vector of energy depositions per particle type for this event
@@ -122,6 +122,7 @@ int main(int argc, char** argv)
 	    = std::find(particleIDsAllEvents.at(maxLengthID).begin(), particleIDsAllEvents.at(maxLengthID).end(), particleIDsAllEvents.at(i).at(j));
 	  if(it!=particleIDsAllEvents.at(maxLengthID).end())
 	    {
+	      // Fill correct histogram with the relevant energy deposition value
 	      int element = std::distance(particleIDsAllEvents.at(maxLengthID).begin(), it);
 	      histoVector.at(element)->Fill(edepPerPIDAllEvents.at(i).at(j));
 	    }
@@ -143,8 +144,10 @@ int main(int argc, char** argv)
   legend->Draw();
   c1->Print("edepPerParticle.png");
   c1->SetLogx();
+  c1->SetLogy();
   c1->Print("edepPerParticleLog.png");
   c1->SetLogx(0);
+  c1->SetLogy(0);
   delete hs;
   delete legend;
   
