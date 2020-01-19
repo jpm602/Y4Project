@@ -35,6 +35,7 @@
 #include "G4Event.hh"
 #include "G4RunManager.hh"
 #include "G4LogicalVolume.hh"
+#include "G4SystemOfUnits.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -74,23 +75,23 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
       if(volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0)
 	{
 	  // Save delta energy of particle in gas
-	  fEventAction->DeltaEnergy(step->GetDeltaEnergy());
+	  fEventAction->DeltaEnergy(step->GetDeltaEnergy()/MeV);
 	  // Save position of hit
 	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-	  fEventAction->GasPos(pos.x(), pos.y(), pos.z());
+	  fEventAction->GasPos(pos.x()/mm, pos.y()/mm, pos.z()/mm);
 	  // Save time since start of event of hit
-	  fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime());
+	  fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime()/ns);
 	}
       // Plate tracking for final particles that are read out
       if(volume->GetName() == "Plate" && edepStep!=0)
 	{
 	  // Save energy deposition of particles hitting the plate
-	  fEventAction->EnergyDep(edepStep);
+	  fEventAction->EnergyDep(edepStep/MeV);
 	  // Save position of hit
 	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-	  fEventAction->HitPos(pos.x(), pos.y(), pos.z());
+	  fEventAction->HitPos(pos.x()/mm, pos.y()/mm, pos.z()/mm);
 	  // Save time since start of event of hit
-	  fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime());
+	  fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime()/ns);
 	}
     }
 }

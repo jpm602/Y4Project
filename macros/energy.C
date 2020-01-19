@@ -2,9 +2,13 @@
 #include "TString.h" // For filename string
 #include "TCanvas.h" // For graph canvases
 #include "TH1F.h" // For 1D histograms
+#include "THStack.h" // For plotting multiple histograms
+#include "TLegend.h" // Legend for energy per particle type plot
+#include "TString.h" // For legend labels
 
 #include <iostream> // std::cout
 #include <algorithm> // std::find
+#include <string> // std::to_string
 
 int main(int argc, char** argv)
 {
@@ -21,68 +25,138 @@ int main(int argc, char** argv)
   Reader reader(tree);
   std::cout << "file opened and tree given to reader" << std::endl;
 
-  std::vector<std::vector<int>> parentsAllEvents; // Vector of vectors containing parent IDs for each event
-  std::vector<std::vector<int>> tracksAllEvents; // Vector of vectors containing track IDs for each event
-  std::vector<std::vector<double>> edepAllEvents; // Vector of vectors containing summed energy depositions per parent for each event
-  std::cout << "vectors of vectors created" << std::endl;
-  
-  // Loop over events to get parent and track IDs for each events
+  // Vectors of vectors to store particle IDs and relevant energy depositions for each event
+  std::vector<std::vector<int>> particleIDsAllEvents;
+  std::vector<std::vector<double>> edepPerPIDAllEvents;
+  // Vector of total energy depositions for each event
+  std::vector<double> edepTotalAllEvents;
+  // Vector of total delta energy of primary particle for each event
+  std::vector<double> deltaEnergyTotalAllEvents;
+
+  // Loop over events to add up total energy depositions
   Long64_t nentries = reader.fChain->GetEntries();
-  std::cout << "starting ID loop" << std::endl;
   for(Long64_t ientry=0; ientry<nentries; ientry++)
     {
-      reader.GetEntry(ientry); // Get current event
-      std::vector<int> parentsSingleEvent; // Vector of parent IDs for this event
-      std::vector<int> tracksSingleEvent; // Vector of track IDs for this event
-
-      // Loop over parent IDs in this event
-      for(unsigned int i=0; i<reader.ParentID->size(); i++)
+      if(ientry%100==0) // Progress meter
+	std::cout << "on entry " << ientry << " out of " << nentries << std::endl;
+      reader.GetEntry(ientry);
+      
+      std::vector<int> particleIDs; // Vector of particle IDs for this event
+      std::vector<double> edep; // Vector of energy depositions per particle type for this event
+      
+      // Loop over particle IDs in this event to find all unique ones
+      for(unsigned int i=0; i<reader.ParticleID->size(); i++)
 	{
-	  // Store non duplicate list of parent IDs
-	  if(std::find(parentsSingleEvent.begin(), parentsSingleEvent.end(), reader.ParentID->at(i))==parentsSingleEvent.end())
-	    parentsSingleEvent.push_back(reader.ParentID->at(i));
-	  // Store non duplicate list of track IDs
-	  if(std::find(tracksSingleEvent.begin(), tracksSingleEvent.end(), reader.TrackID->at(i))==tracksSingleEvent.end())
-	    tracksSingleEvent.push_back(reader.TrackID->at(i));
+	  // Store particle ID if it isn't already
+	  if(std::find(particleIDs.begin(), particleIDs.end(), reader.ParticleID->at(i)) == particleIDs.end())
+	    particleIDs.push_back(reader.ParticleID->at(i));
 	}
       
-      // Store IDs for a whole event in the vector of vectors
-      parentsAllEvents.push_back(parentsSingleEvent);
-      tracksAllEvents.push_back(tracksSingleEvent);
-    }
-  std::cout << "finished ID loop" << std::endl;
-  
-  // Loop over events to sum energies for each parent and store in a vector of vectors that corresponds to the previous ones
-  std::cout << "starting energy loop" << std::endl;
-  for(Long64_t ientry=0; ientry<nentries; ientry++)
-    {
-      reader.GetEntry(ientry); // Get current event
-      std::vector<double> edepSingleEvent; // Vector of summed energy depositions per parent for this event
+      // Loop to set all elements of edep to zero ready for summing energy depositions
+      for(unsigned int i=0; i<particleIDs.size(); i++)
+	  edep.push_back(0.);
+      double totalEdep = 0; // Set initial total edep to zero ready for summing energy depositions
       
-      // Loop over number of parent IDs to set starting energy values to zero
-      for(unsigned int i=0; i<parentsAllEvents.at(ientry).size(); i++)
-	edepSingleEvent.push_back(0.);
-
-      std::cout << reader.ParentID->size() << " " << reader.EnergyDeposition->size() << std::endl;
-      // Loop over parent IDs to sum up energy deposition for each
-      for(unsigned int i=0; i<reader.ParentID->size(); i++)
-      	{
-	  // Find element in parent ID vector that contains the ID of the current interaction and then save the energy deposition to it
-	  std::vector<int>::iterator it = std::find(parentsAllEvents.at(ientry).begin(), parentsAllEvents.at(ientry).end(), reader.ParentID->at(i));
-	  if(it!=parentsAllEvents.at(ientry).end())
+      // Loop to sum energy depositions for this event for each particle type and also total energy deposition from all types
+      for(unsigned int i=0; i<reader.EnergyDeposition->size(); i++)
+	{
+	  totalEdep += reader.EnergyDeposition->at(i);
+	  
+	  // Find element in energy deposition vector that corresponds to this particle ID and add this current value onto it
+	  std::vector<int>::iterator it = std::find(particleIDs.begin(), particleIDs.end(), reader.ParticleID->at(i));
+	  if(it!=particleIDs.end())
 	    {
-	      int element = std::distance(parentsAllEvents.at(ientry).begin(), it); // Uses iterator returned by find to get element of vector
-	      edepSingleEvent.at(element)+=reader.EnergyDeposition->at(i); // this should work after changing code - problem with way IDs are recorded
+	      int element = std::distance(particleIDs.begin(), it);
+	      edep.at(element)+=reader.EnergyDeposition->at(i);
 	    }
-      	}
-      
-      // Store energy deposition for a whole event in a vector of vectors
-      edepAllEvents.push_back(edepSingleEvent);
-    }
-  std::cout << "finished energy loop" << std::endl;
+	}
 
-  // Make histogram for energy per parent
-  TH1F *hEnergyPerParent = new TH1F("energyPerParent", "Energy Deposited Per Parent Particle", 100, 0, 0);
+      double totalDeltaEnergy = 0; // Set initial value of total delta energy to zero
+      // Loop to sum delta energies of the primary particle in the gas
+      for(unsigned int i=0; i<reader.GasDeltaEnergy->size(); i++)
+	{
+	  if(reader.ParentID->at(i)==0)
+	    totalDeltaEnergy+=reader.GasDeltaEnergy->at(i);
+	}
+      
+      // Push back results from this event into vectors for all events
+      particleIDsAllEvents.push_back(particleIDs);
+      edepPerPIDAllEvents.push_back(edep);
+      edepTotalAllEvents.push_back(totalEdep);
+      deltaEnergyTotalAllEvents.push_back(totalDeltaEnergy);
+    }
+
+  // Plotting total energy deposition for each event
+  TCanvas *c1 = new TCanvas();
+  TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+  for(unsigned int i=0; i<edepTotalAllEvents.size(); i++)
+    hTotalEdep->Fill(edepTotalAllEvents.at(i));
+  hTotalEdep->Draw();
+  c1->Print("totalEdep.png");
+  delete hTotalEdep;
+  
+  // Plotting total energy deposition for each particle species for each event
+  THStack *hs = new THStack("hs", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events"); // Histogram stack
+  TLegend *legend = new TLegend(0.7, 0.7, 0.95, 0.95);
+  // Find event with most unique particle species and make a vector of histograms of that length
+  int maxLengthID = 0; // Set a starting value
+  for(unsigned int i=0; i<particleIDsAllEvents.size(); i++)
+    {
+      if(particleIDsAllEvents.at(i).size()>particleIDsAllEvents.at(maxLengthID).size()) // Set new max length if it is longer
+	maxLengthID = i;
+    }
+  // Make vector with correct number of histograms
+  std::vector<TH1F*> histoVector;
+  for(unsigned int i=0; i<particleIDsAllEvents.at(maxLengthID).size(); i++)
+    {
+      TH1F *hEdepPerPID = new TH1F("edepPerPID", "Energy Deposited per Primary Particle per Particle Species;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+      histoVector.push_back(hEdepPerPID);
+    }
+  // Loop through all events to fill relevant histograms with the correct energy depositions
+  for(unsigned int i=0; i<particleIDsAllEvents.size(); i++)
+    {
+      for(unsigned int j=0; j<particleIDsAllEvents.at(i).size(); j++)
+	{
+	  // Find histogram for this particle species
+	  std::vector<int>::iterator it
+	    = std::find(particleIDsAllEvents.at(maxLengthID).begin(), particleIDsAllEvents.at(maxLengthID).end(), particleIDsAllEvents.at(i).at(j));
+	  if(it!=particleIDsAllEvents.at(maxLengthID).end())
+	    {
+	      int element = std::distance(particleIDsAllEvents.at(maxLengthID).begin(), it);
+	      histoVector.at(element)->Fill(edepPerPIDAllEvents.at(i).at(j));
+	    }
+	}
+    }
+  // Loop through vector of histograms to add them all to the stack
+  for(unsigned int i=0; i<histoVector.size(); i++)
+    {
+      std::cout << "number of particle species: " << histoVector.size() << std::endl;
+      // Add to histogram stack
+      histoVector.at(i)->SetLineColor(i+2); // Set a different colour for each particle type
+      hs->Add(histoVector.at(i));
+      // Legend entry labelling each particle ID
+      TString label = "Particle ID: ";
+      label += std::to_string(particleIDsAllEvents.at(maxLengthID).at(i));
+      legend->AddEntry(histoVector.at(i), label, "l");
+    }
+  hs->Draw();
+  legend->Draw();
+  c1->Print("edepPerParticle.png");
+  c1->SetLogx();
+  c1->Print("edepPerParticleLog.png");
+  c1->SetLogx(0);
+  delete hs;
+  delete legend;
+  
+  // Plotting total delta energy for each event
+  TH1F *hTotalDeltaE = new TH1F("deltaETotal", "Total Delta Energy of Primary Particle in Gas Regions;Delta Energy(MeV);Number of Events", 100, 0, 0);
+  for(unsigned int i=0; i<deltaEnergyTotalAllEvents.size(); i++)
+    hTotalDeltaE->Fill(deltaEnergyTotalAllEvents.at(i));
+  hTotalDeltaE->Draw();
+  c1->Print("totalDeltaE.png");
+  delete hTotalDeltaE;
+
+  file->Close();
+  
   return 0;
 }
-// Need to do total energy per parent and total energy per parent per particle
