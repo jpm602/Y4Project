@@ -33,6 +33,9 @@ int main(int argc, char** argv)
   // Vector of total delta energy of primary particle for each event
   std::vector<double> deltaEnergyTotalAllEvents;
 
+  TCanvas *c2 = new TCanvas();
+  TH1F *histo = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+
   // Loop over events to add up total energy depositions
   Long64_t nentries = reader.fChain->GetEntries();
   for(Long64_t ientry=0; ientry<nentries; ientry++)
@@ -60,14 +63,17 @@ int main(int argc, char** argv)
       // Loop to sum energy depositions for this event for each particle type and also total energy deposition from all types
       for(unsigned int i=0; i<reader.EnergyDeposition->size(); i++)
 	{
-	  totalEdep += reader.EnergyDeposition->at(i);
-	  
-	  // Find element in energy deposition vector that corresponds to this particle ID and add this current value onto it
-	  std::vector<int>::iterator it = std::find(particleIDs.begin(), particleIDs.end(), reader.ParticleID->at(i));
-	  if(it!=particleIDs.end())
+	  if(reader.EnergyDeposition->at(i)>1e-6) // Check entry isn't blank
 	    {
-	      int element = std::distance(particleIDs.begin(), it);
-	      edep.at(element)+=reader.EnergyDeposition->at(i);
+	      totalEdep += reader.EnergyDeposition->at(i);
+	      
+	      // Find element in energy deposition vector that corresponds to this particle ID and add this current value onto it
+	      std::vector<int>::iterator it = std::find(particleIDs.begin(), particleIDs.end(), reader.ParticleID->at(i));
+	      if(it!=particleIDs.end())
+		{
+		  int element = std::distance(particleIDs.begin(), it);
+		  edep.at(element)+=reader.EnergyDeposition->at(i);
+		}
 	    }
 	}
 
@@ -75,8 +81,11 @@ int main(int argc, char** argv)
       // Loop to sum delta energies of the primary particle in the gas
       for(unsigned int i=0; i<reader.GasDeltaEnergy->size(); i++)
 	{
-	  if(reader.ParentID->at(i)==0)
-	    totalDeltaEnergy+=reader.GasDeltaEnergy->at(i);
+	  if(reader.GasDeltaEnergy->at(i)>1e-6) // Check entry isn't blank
+	    {
+	      if(reader.ParentID->at(i)==0)
+		totalDeltaEnergy+=reader.GasDeltaEnergy->at(i);
+	    }
 	}
       
       // Push back results from this event into vectors for all events
@@ -84,13 +93,23 @@ int main(int argc, char** argv)
       edepPerPIDAllEvents.push_back(edep);
       edepTotalAllEvents.push_back(totalEdep);
       deltaEnergyTotalAllEvents.push_back(totalDeltaEnergy);
+      particleIDs.clear();
+      edep.clear();
+
+      histo->Fill(totalEdep);
     }
+  histo->Draw();
+  c2->Print("test.png");
+  delete histo;
 
   // Plotting total energy deposition for each event
   TCanvas *c1 = new TCanvas();
-  TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+  TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 50000);
   for(unsigned int i=0; i<edepTotalAllEvents.size(); i++)
-    hTotalEdep->Fill(edepTotalAllEvents.at(i));
+    {
+      float edep = edepTotalAllEvents.at(i);
+      hTotalEdep->Fill(edep);
+    }
   hTotalEdep->Draw();
   c1->Print("totalEdep.png");
   delete hTotalEdep;
@@ -163,3 +182,4 @@ int main(int argc, char** argv)
   
   return 0;
 }
+

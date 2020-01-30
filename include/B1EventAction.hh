@@ -53,8 +53,6 @@ class B1EventAction : public G4UserEventAction
     virtual void EnergyDep(G4double value){edep->push_back(value);};
     virtual void Time(G4double value){time->push_back(value);};
     virtual void DeltaEnergy(G4double value){deltaEnergy->push_back(value);};
-    virtual void GasPos(G4double x, G4double y, G4double z);
-    virtual void GasTime(G4double value){gasTime->push_back(value);};
     virtual void IDNumbers(G4int pID, G4int tID, G4int prntID);
 
   private:
@@ -66,10 +64,6 @@ class B1EventAction : public G4UserEventAction
     std::vector<double> *edep;
     std::vector<double> *time;
     std::vector<double> *deltaEnergy;
-    std::vector<double> *gasPosX;
-    std::vector<double> *gasPosY;
-    std::vector<double> *gasPosZ;
-    std::vector<double> *gasTime;
     std::vector<int> *particleID;
     std::vector<int> *trackID;
     std::vector<int> *parentID;
@@ -79,4 +73,4 @@ class B1EventAction : public G4UserEventAction
 
 #endif
 
-    
+

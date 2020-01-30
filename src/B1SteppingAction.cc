@@ -65,33 +65,39 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
   // collect energy deposited in this step
   G4double edepStep = step->GetTotalEnergyDeposit();
 
-  // Tracking criteria - done like this for easier analysis
+  // Tracking criteria - done like this for easier analysis - need to store a blank value when the other interaction happens so that numbers correspond
   if((volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0) || (volume->GetName() == "Plate" && edepStep!=0))
     {
       // Save particle ID, track ID, and parent ID
       G4Track *track = step->GetTrack();
       fEventAction->IDNumbers(track->GetDynamicParticle()->GetPDGcode(), track->GetTrackID(), track->GetParentID());
+      // Save position of hit
+      G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
+      fEventAction->HitPos(pos.x()/mm, pos.y()/mm, pos.z()/mm);
+      // Save time since start of event of hit
+      fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime()/ns);
       // Gas tracking for initial particle interactions
-      if(volume->GetName() == "Gas" && step->GetDeltaEnergy()!=0)
+      if(volume->GetName() == "Gas")
 	{
 	  // Save delta energy of particle in gas
 	  fEventAction->DeltaEnergy(step->GetDeltaEnergy()/MeV);
-	  // Save position of hit
-	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-	  fEventAction->GasPos(pos.x()/mm, pos.y()/mm, pos.z()/mm);
-	  // Save time since start of event of hit
-	  fEventAction->GasTime(step->GetPostStepPoint()->GetGlobalTime()/ns);
+	  // Saving a blank number for edep to make analysis work
+	  fEventAction->EnergyDep(0);
 	}
       // Plate tracking for final particles that are read out
-      if(volume->GetName() == "Plate" && edepStep!=0)
+      else if(volume->GetName() == "Plate")
 	{
 	  // Save energy deposition of particles hitting the plate
 	  fEventAction->EnergyDep(edepStep/MeV);
-	  // Save position of hit
-	  G4ThreeVector pos = step->GetPostStepPoint()->GetPosition();
-	  fEventAction->HitPos(pos.x()/mm, pos.y()/mm, pos.z()/mm);
-	  // Save time since start of event of hit
-	  fEventAction->Time(step->GetPostStepPoint()->GetGlobalTime()/ns);
+	  // Saving a blank number for deltaE to make analysis work
+	  fEventAction->DeltaEnergy(0);
+	}
+      else
+	{
+	  // Saving a blank number for edep to make analysis work
+	  fEventAction->EnergyDep(0);
+	  // Saving a blank number for deltaE to make analysis work
+	  fEventAction->DeltaEnergy(0);
 	}
     }
 }
