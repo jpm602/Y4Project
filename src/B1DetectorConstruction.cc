@@ -43,6 +43,7 @@
 #include "G4SystemOfUnits.hh"
 #include "G4VisAttributes.hh"
 #include "G4PVReplica.hh"
+#include "G4UnitsTable.hh"
 
 #include <string>
 #include <vector>
@@ -66,8 +67,8 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   G4NistManager* nist = G4NistManager::Instance();
 
   // Convert between atomic mass units and kg, set Boltzmann constant in SI units
-  G4double amu = 1.66054e-27;
-  G4double kBoltzmann = 1.38064582e-23;
+  G4double amu = 1.66054e-27*kg;
+  G4double kBoltzmann = 1.38064582e-23*joule/kelvin;
    
   // Option to switch on/off checking of volumes overlaps
   //
@@ -137,6 +138,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       gasMat->AddMaterial(tetra, tetraPercent*perCent);
       gasMat->AddMaterial(butane, butanePercent*perCent);
       gasMat->AddMaterial(sf6, sf6Percent*perCent);
+      std::cout << "gas density " << gasMat->GetDensity()/kg/m3 << std::endl;
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;

@@ -28,13 +28,13 @@ int main(int argc, char** argv)
   // Vectors of vectors to store particle IDs and relevant energy depositions for each event
   std::vector<std::vector<int>> particleIDsAllEvents;
   std::vector<std::vector<double>> edepPerPIDAllEvents;
-  // Vector of total energy depositions for each event
-  std::vector<double> edepTotalAllEvents;
-  // Vector of total delta energy of primary particle for each event
-  std::vector<double> deltaEnergyTotalAllEvents;
 
-  TCanvas *c2 = new TCanvas();
-  TH1F *histo = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+  // Histograms and canvas
+  // Plotting total energy deposition for each event
+  TCanvas *c1 = new TCanvas();
+  TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
+  // Plotting total delta energy for each event
+  TH1F *hTotalDeltaE = new TH1F("deltaETotal", "Total Delta Energy of Primary Particle in Gas Regions;Delta Energy(MeV);Number of Events", 100, 0, 0);
 
   // Loop over events to add up total energy depositions
   Long64_t nentries = reader.fChain->GetEntries();
@@ -91,28 +91,22 @@ int main(int argc, char** argv)
       // Push back results from this event into vectors for all events
       particleIDsAllEvents.push_back(particleIDs);
       edepPerPIDAllEvents.push_back(edep);
-      edepTotalAllEvents.push_back(totalEdep);
-      deltaEnergyTotalAllEvents.push_back(totalDeltaEnergy);
       particleIDs.clear();
       edep.clear();
 
-      histo->Fill(totalEdep);
+      // Fill histograms for edep and delta energy
+      hTotalEdep->Fill(totalEdep);
+      hTotalDeltaE->Fill(totalDeltaEnergy);
     }
-  histo->Draw();
-  c2->Print("test.png");
-  delete histo;
 
-  // Plotting total energy deposition for each event
-  TCanvas *c1 = new TCanvas();
-  TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 50000);
-  for(unsigned int i=0; i<edepTotalAllEvents.size(); i++)
-    {
-      float edep = edepTotalAllEvents.at(i);
-      hTotalEdep->Fill(edep);
-    }
+  // Draw edep histogram, save it, then delete it
   hTotalEdep->Draw();
   c1->Print("totalEdep.png");
   delete hTotalEdep;
+  // Draw deltaE histogram, save it, then delete it
+  hTotalDeltaE->Draw();
+  c1->Print("totalDeltaE.png");
+  delete hTotalDeltaE;
   
   // Plotting total energy deposition for each particle species for each event
   THStack *hs = new THStack("hs", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events"); // Histogram stack
@@ -169,14 +163,6 @@ int main(int argc, char** argv)
   c1->SetLogy(0);
   delete hs;
   delete legend;
-  
-  // Plotting total delta energy for each event
-  TH1F *hTotalDeltaE = new TH1F("deltaETotal", "Total Delta Energy of Primary Particle in Gas Regions;Delta Energy(MeV);Number of Events", 100, 0, 0);
-  for(unsigned int i=0; i<deltaEnergyTotalAllEvents.size(); i++)
-    hTotalDeltaE->Fill(deltaEnergyTotalAllEvents.at(i));
-  hTotalDeltaE->Draw();
-  c1->Print("totalDeltaE.png");
-  delete hTotalDeltaE;
 
   file->Close();
   
