@@ -44,6 +44,7 @@
 #include "G4VisAttributes.hh"
 #include "G4PVReplica.hh"
 #include "G4UnitsTable.hh"
+#include "G4UserLimits.hh"
 
 #include <string>
 #include <vector>
@@ -67,7 +68,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   G4NistManager* nist = G4NistManager::Instance();
 
   // Convert between atomic mass units and kg, set Boltzmann constant in SI units
-  G4double amu = 1.66054e-27*kg;
+  static const G4double amu = 1.66054e-27*kg;
   G4double kBoltzmann = 1.38064582e-23*joule/kelvin;
    
   // Option to switch on/off checking of volumes overlaps
@@ -111,34 +112,32 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
     {
       // Gas parameters
       G4double gasThick = 1*mm;
-      G4double gasPressure = 1*bar;
-      gasPressure/= hep_pascal; // Convert to pascal
+      G4double gasPressure = 100000*hep_pascal;
       
       // Gas components
       G4Material *tetra = new G4Material("Tetrafluroethane", 4.25*kg/m3, 3, kStateGas);
       tetra->AddElement(nist->FindOrBuildElement(6), 2);
       tetra->AddElement(nist->FindOrBuildElement(1), 2);
       tetra->AddElement(nist->FindOrBuildElement(9), 4);
-      G4double tetraMass = 2*12.0107*amu + 2*1.00784*amu + 4*18.998403*amu; // Mass of tetrafluoroethane in kg
+      G4double tetraMass = (2*12.0107 + 2*1.00784 + 4*18.998403)*amu; // Mass of tetrafluoroethane in kg
       G4double tetraPercent = 94.7; // Percentage of mixture
 	
       G4Material *butane = nist->FindOrBuildMaterial("G4_BUTANE"); // assuming butane and iso-butane have same properties - density matches
-      G4double butaneMass = 4*12.0107*amu + 10*1.00784*amu; // Mass of butane in kg
+      G4double butaneMass = (4*12.0107 + 10*1.00784)*amu; // Mass of butane in kg
       G4double butanePercent = 5.0; // Percentage of mixture
       
       G4Material *sf6 = new G4Material("Sulphur Hexafluoride", 6.17*kg/m3, 2, kStateGas);
       sf6->AddElement(nist->FindOrBuildElement(16), 1);
       sf6->AddElement(nist->FindOrBuildElement(9), 6);
-      G4double sf6Mass = 32.065*amu + 6*18.998403*amu; // Mass of SF6 in kg
+      G4double sf6Mass = (32.065 + 6*18.998403)*amu; // Mass of SF6 in kg
       G4double sf6Percent = 0.3; // Percentage of mixture
 
       G4double averageMass = (tetraMass*tetraPercent + butaneMass*butanePercent + sf6Mass*sf6Percent)/100;
-      G4double gasDensity = (gasPressure*averageMass)/(kBoltzmann*CLHEP::STP_Temperature);
+      G4double gasDensity = (gasPressure/hep_pascal*averageMass/kg)/(kBoltzmann/joule/kelvin*CLHEP::STP_Temperature/kelvin);
       G4Material *gasMat = new G4Material("rpcGas", gasDensity, 3, kStateGas, CLHEP::STP_Temperature, gasPressure);
       gasMat->AddMaterial(tetra, tetraPercent*perCent);
       gasMat->AddMaterial(butane, butanePercent*perCent);
       gasMat->AddMaterial(sf6, sf6Percent*perCent);
-      std::cout << "gas density " << gasMat->GetDensity()/kg/m3 << std::endl;
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;
@@ -422,8 +421,20 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			kYAxis,                 // replication axis
 			nReplicasY,             // number of replicas
 			plateSizeY);            // width
-		       
 
+      // Step limits - RPCs
+      G4double rpcLimit = 0.01*mm;
+      G4UserLimits *rpcLimiter = new G4UserLimits();
+      rpcLimiter->SetMaxAllowedStep(rpcLimit);
+      logicGas->SetUserLimits(rpcLimiter);
+      logicPlate->SetUserLimits(rpcLimiter);
+      
+      // Step limits - world - needs to be larger for code speed
+      G4double worldLimit = 10*cm;
+      G4UserLimits *worldLimiter = new G4UserLimits();
+      worldLimiter->SetMaxAllowedStep(worldLimit);
+      logicWorld->SetUserLimits(worldLimiter);		       
+      
     }
   // Silicon model of RPCs
   else

@@ -45,7 +45,7 @@
 
 B1RunAction::B1RunAction()
 : G4UserRunAction()
-{}
+{ }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

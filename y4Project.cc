@@ -44,6 +44,8 @@
 
 #include "Randomize.hh"
 
+#include "G4StepLimiterPhysics.hh"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 int main(int argc,char** argv)
@@ -73,6 +75,12 @@ int main(int argc,char** argv)
 
   // Physics list
   G4VModularPhysicsList* physicsList = new QBBC;
+
+  // Step limiter
+  G4StepLimiterPhysics* stepLim = new G4StepLimiterPhysics();
+  stepLim->SetApplyToAll(true);
+  physicsList->RegisterPhysics(stepLim);
+  
   physicsList->SetVerboseLevel(1);
   runManager->SetUserInitialization(physicsList);
     
