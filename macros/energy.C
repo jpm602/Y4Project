@@ -4,7 +4,6 @@
 #include "TH1F.h" // For 1D histograms
 #include "THStack.h" // For plotting multiple histograms
 #include "TLegend.h" // Legend for energy per particle type plot
-#include "TString.h" // For legend labels
 
 #include <iostream> // std::cout
 #include <algorithm> // std::find
@@ -65,7 +64,8 @@ int main(int argc, char** argv)
 	{
 	  if(reader.EnergyDeposition->at(i)>1e-6) // Check entry isn't blank
 	    {
-	      totalEdep += reader.EnergyDeposition->at(i);
+	      if(reader.ParentID->at(i)!=0)
+		totalEdep += reader.EnergyDeposition->at(i);
 	      
 	      // Find element in energy deposition vector that corresponds to this particle ID and add this current value onto it
 	      std::vector<int>::iterator it = std::find(particleIDs.begin(), particleIDs.end(), reader.ParticleID->at(i));

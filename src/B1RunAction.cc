@@ -74,6 +74,7 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
   analysisManager->CreateNtupleDColumn("HitPosY", hitPosY);
   analysisManager->CreateNtupleDColumn("HitPosZ", hitPosZ);
   analysisManager->CreateNtupleDColumn("Time", time);
+  analysisManager->CreateNtupleDColumn("EnergyLoss", energyLoss);
 
   analysisManager->FinishNtuple();
   

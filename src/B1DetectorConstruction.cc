@@ -331,7 +331,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    worldMat,           // its material
 			    "Gas");             // its name
       logicGasEnv->SetVisAttributes(envelopeVisAttributes);
-      logicGasEnv->SetFieldManager(emFieldSetup->GetLocalFieldManager(), true);
+      //logicGasEnv->SetFieldManager(emFieldSetup->GetLocalFieldManager(), true);
 
       G4VPhysicalVolume *physGasEnv = 
 	new G4PVPlacement(0,                     // no rotation
@@ -404,6 +404,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    "Gas");           // its name
       logicGas->SetVisAttributes(gasVisAttributes);
       //logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
+      std::cout << "EM FIELD IS SWITCHED OFF VERY IMPORTANT TO KNOW THIS TURN IT BACK ON SOMETIME" << std::endl;
 
       // Gas placement
       G4VPhysicalVolume *gasReplicaStrip =

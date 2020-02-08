@@ -64,6 +64,8 @@ class B1RunAction : public G4UserRunAction
     std::vector<int> trackID;
     std::vector<int> parentID;
 
+    std::vector<double> energyLoss;
+
   private:
   
 };

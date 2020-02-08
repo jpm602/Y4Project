@@ -55,6 +55,10 @@ class B1EventAction : public G4UserEventAction
     virtual void DeltaEnergy(G4double value){deltaEnergy->push_back(value);};
     virtual void IDNumbers(G4int pID, G4int tID, G4int prntID);
 
+    virtual void InitialEnergy(G4double value){initEnergy=value;};
+    virtual void FinalEnergy(G4double value);
+  
+
   private:
     B1RunAction *fRunAction;
 
@@ -67,6 +71,9 @@ class B1EventAction : public G4UserEventAction
     std::vector<int> *particleID;
     std::vector<int> *trackID;
     std::vector<int> *parentID;
+
+    G4double initEnergy = 0;
+    std::vector<double> *energyLoss;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

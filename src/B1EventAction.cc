@@ -51,6 +51,8 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   particleID = &runAction->particleID;
   trackID = &runAction->trackID;
   parentID = &runAction->parentID;
+
+  energyLoss = &runAction->energyLoss;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -72,6 +74,8 @@ void B1EventAction::BeginOfEventAction(const G4Event*)
   particleID->clear();
   trackID->clear();
   parentID->clear();
+
+  energyLoss->clear();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -96,5 +100,16 @@ void B1EventAction::IDNumbers(G4int pID, G4int tID, G4int prntID)
   particleID->push_back(pID);
   trackID->push_back(tID);
   parentID->push_back(prntID);
+}
+
+void B1EventAction::FinalEnergy(G4double value)
+{
+  if(initEnergy!=0)
+    {
+      G4double energyDiff = initEnergy - value;
+      if(energyDiff!=0)
+        energyLoss->push_back(energyDiff);
+      initEnergy = 0;
+    }
 }
 

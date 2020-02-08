@@ -100,6 +100,14 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 	  fEventAction->DeltaEnergy(0);
 	}
     }
+  // Testing new way to determine energy lost in gas by primary
+  if(volume->GetName() != "World")
+    {
+      if(step->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume()->GetName() == "Gas" && step->IsFirstStepInVolume())
+	fEventAction->InitialEnergy(step->GetPreStepPoint()->GetTotalEnergy()/MeV);
+      if(volume->GetName() == "Gas" && step->IsLastStepInVolume())
+	fEventAction->FinalEnergy(step->GetPostStepPoint()->GetTotalEnergy()/MeV);
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
