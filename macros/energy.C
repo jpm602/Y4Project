@@ -81,7 +81,7 @@ int main(int argc, char** argv)
       // Loop to sum delta energies of the primary particle in the gas
       for(unsigned int i=0; i<reader.GasDeltaEnergy->size(); i++)
 	{
-	  if(reader.GasDeltaEnergy->at(i)>1e-6) // Check entry isn't blank
+	  if(reader.GasDeltaEnergy->at(i)<-1e-20) // Check entry isn't blank
 	    {
 	      if(reader.ParentID->at(i)==0)
 		totalDeltaEnergy+=reader.GasDeltaEnergy->at(i);

@@ -86,7 +86,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
   //
   G4double worldSizeXY = 20*m;
   G4double worldSizeZ  = 20*m;
-  G4Material *worldMat = nist->FindOrBuildMaterial("G4_AIR");
+  G4Material *worldMat = nist->FindOrBuildMaterial("G4_Galactic");
   
   G4Box *solidWorld =    
     new G4Box("World",                       // its name
@@ -133,11 +133,12 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       G4double sf6Percent = 0.3; // Percentage of mixture
 
       G4double averageMass = (tetraMass*tetraPercent + butaneMass*butanePercent + sf6Mass*sf6Percent)/100;
-      G4double gasDensity = (gasPressure/hep_pascal*averageMass/kg)/(kBoltzmann/joule/kelvin*CLHEP::STP_Temperature/kelvin);
+      G4double gasDensity = (gasPressure*averageMass)/(kBoltzmann*CLHEP::STP_Temperature);
       G4Material *gasMat = new G4Material("rpcGas", gasDensity, 3, kStateGas, CLHEP::STP_Temperature, gasPressure);
       gasMat->AddMaterial(tetra, tetraPercent*perCent);
       gasMat->AddMaterial(butane, butanePercent*perCent);
       gasMat->AddMaterial(sf6, sf6Percent*perCent);
+      std::cout << gasDensity/(kg/m3) << std::endl;
       
       // Plate Parameters
       G4double plateThick = 1.2*mm;
@@ -331,7 +332,6 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    worldMat,           // its material
 			    "Gas");             // its name
       logicGasEnv->SetVisAttributes(envelopeVisAttributes);
-      //logicGasEnv->SetFieldManager(emFieldSetup->GetLocalFieldManager(), true);
 
       G4VPhysicalVolume *physGasEnv = 
 	new G4PVPlacement(0,                     // no rotation
@@ -430,12 +430,11 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       logicGas->SetUserLimits(rpcLimiter);
       logicPlate->SetUserLimits(rpcLimiter);
       
-      // Step limits - world - needs to be larger for code speed
-      G4double worldLimit = 10*cm;
-      G4UserLimits *worldLimiter = new G4UserLimits();
-      worldLimiter->SetMaxAllowedStep(worldLimit);
-      logicWorld->SetUserLimits(worldLimiter);		       
-      
+      // // Step limits - world - needs to be larger for code speed
+      // G4double worldLimit = 10*cm;
+      // G4UserLimits *worldLimiter = new G4UserLimits();
+      // worldLimiter->SetMaxAllowedStep(worldLimit);
+      // logicWorld->SetUserLimits(worldLimiter);
     }
   // Silicon model of RPCs
   else
