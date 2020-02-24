@@ -403,8 +403,8 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 			    gasMat,           // its material
 			    "Gas");           // its name
       logicGas->SetVisAttributes(gasVisAttributes);
-      //logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
-      std::cout << "EM FIELD IS SWITCHED OFF VERY IMPORTANT TO KNOW THIS TURN IT BACK ON SOMETIME" << std::endl;
+      logicGas->SetFieldManager(emFieldSetup->GetLocalFieldManager(), false);
+      //std::cout << "EM FIELD IS SWITCHED OFF VERY IMPORTANT TO KNOW THIS TURN IT BACK ON SOMETIME" << std::endl;
 
       // Gas placement
       G4VPhysicalVolume *gasReplicaStrip =
@@ -429,6 +429,20 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       rpcLimiter->SetMaxAllowedStep(rpcLimit);
       logicGas->SetUserLimits(rpcLimiter);
       logicPlate->SetUserLimits(rpcLimiter);
+
+      // // Test volume
+      // G4Box *testBox = new G4Box("Gas", 5*m, 5*m, 27*mm);
+      // G4LogicalVolume *logicTest = new G4LogicalVolume(testBox, gasMat, "Gas");
+      // G4VPhysicalVolume *physTes =
+      // 	new G4PVPlacement(0,                     // no rotation
+      // 			  G4ThreeVector(0, 0, -10*m),// placement
+      // 			  logicTest,           // its logical volume
+      // 			  "Gas",                 // its name
+      // 			  logicWorld,           // its mother  volume
+      // 			  false,                 // no boolean operation
+      // 			  0,                     // copy number
+      // 			  checkOverlaps);        // overlaps checking
+      //logicTest->SetUserLimits(rpcLimiter);
       
       // // Step limits - world - needs to be larger for code speed
       // G4double worldLimit = 10*cm;

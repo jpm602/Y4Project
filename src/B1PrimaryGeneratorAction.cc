@@ -70,7 +70,7 @@ B1PrimaryGeneratorAction::~B1PrimaryGeneratorAction()
 
 void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-6*m));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0,0,-7*m));
 
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
