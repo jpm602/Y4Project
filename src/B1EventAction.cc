@@ -53,6 +53,8 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   parentID = &runAction->parentID;
 
   energyLoss = &runAction->energyLoss;
+  
+  avalancheSize = &runAction->avalancheSize;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -76,6 +78,9 @@ void B1EventAction::BeginOfEventAction(const G4Event*)
   parentID->clear();
 
   energyLoss->clear();
+
+  avalancheSize->clear();
+  avalancheSize->push_back(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

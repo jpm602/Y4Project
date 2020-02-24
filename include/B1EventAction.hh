@@ -57,6 +57,8 @@ class B1EventAction : public G4UserEventAction
 
     virtual void InitialEnergy(G4double value){initEnergy=value;};
     virtual void FinalEnergy(G4double value);
+
+    virtual void AvalancheCount(){avalancheSize->at(0)+=1;};
   
 
   private:
@@ -74,6 +76,8 @@ class B1EventAction : public G4UserEventAction
 
     G4double initEnergy = 0;
     std::vector<double> *energyLoss;
+
+    std::vector<int> *avalancheSize;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

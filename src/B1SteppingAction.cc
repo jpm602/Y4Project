@@ -101,14 +101,20 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 	  fEventAction->DeltaEnergy(0);
 	}
     }
-  // // Testing new way to determine energy lost in gas by primary
-  // if(volume->GetName() != "World")
-  //   {
-  //     if(step->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume()->GetName() == "Gas" && step->IsFirstStepInVolume())
-  // 	fEventAction->InitialEnergy(step->GetPreStepPoint()->GetTotalEnergy()/MeV);
-  //     if(volume->GetName() == "Gas" && step->IsLastStepInVolume())
-  // 	fEventAction->FinalEnergy(step->GetPostStepPoint()->GetTotalEnergy()/MeV);
-  //   }
+
+  // Avalanche testing
+  // Ensure particle is only counted once, and has travelled through the gas and reached the plate
+  if(volume->GetName() == "Gas" && step->IsLastStepInVolume() == true
+     && step->GetPostStepPoint()->GetTouchableHandle()->GetVolume()->GetLogicalVolume()->GetName() == "Plate")
+    {
+      if(step->GetTrack()->GetDynamicParticle()->GetPDGcode() == 11) // Check particle is electron
+	{
+	  if(step->GetTrack()->GetOriginTouchableHandle()->GetVolume()->GetLogicalVolume()->GetName() == "Gas") // Check particle was produced in gas
+	    {
+	      fEventAction->AvalancheCount();
+	    }
+	}
+    }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

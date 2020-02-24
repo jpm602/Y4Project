@@ -66,6 +66,8 @@ class B1RunAction : public G4UserRunAction
 
     std::vector<double> energyLoss;
 
+    std::vector<int> avalancheSize;
+
   private:
   
 };
