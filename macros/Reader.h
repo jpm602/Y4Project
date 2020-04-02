@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Sun Dec  8 13:54:12 2019 by ROOT version 6.18/02
+// Mon Mar  2 12:24:20 2020 by ROOT version 6.18/02
 // from TTree output/output
 // found on file: output.root
 //////////////////////////////////////////////////////////
@@ -13,7 +13,8 @@
 #include <TFile.h>
 
 // Header file for the classes stored in the TTree if any.
-#include <vector>
+#include "vector"
+#include "vector"
 
 class Reader {
 public :
@@ -23,34 +24,32 @@ public :
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
    // Declaration of leaf types
+   std::vector<double>  *EnergyDeposition;
+   std::vector<double>  *GasDeltaEnergy;
    std::vector<int>     *ParticleID;
    std::vector<int>     *TrackID;
    std::vector<int>     *ParentID;
    std::vector<double>  *HitPosX;
    std::vector<double>  *HitPosY;
    std::vector<double>  *HitPosZ;
-   std::vector<double>  *EnergyDeposition;
    std::vector<double>  *Time;
-   std::vector<double>  *GasPosX;
-   std::vector<double>  *GasPosY;
-   std::vector<double>  *GasPosZ;
-   std::vector<double>  *GasDeltaEnergy;
-   std::vector<double>  *GasTime;
+   std::vector<double>  *EnergyLoss;
+   std::vector<int>     *AvalancheSize;
+   std::vector<double>  *AvalancheEnergy;
 
    // List of branches
+   TBranch        *b_EnergyDeposition;   //!
+   TBranch        *b_GasDeltaEnergy;   //!
    TBranch        *b_ParticleID;   //!
    TBranch        *b_TrackID;   //!
    TBranch        *b_ParentID;   //!
    TBranch        *b_HitPosX;   //!
    TBranch        *b_HitPosY;   //!
    TBranch        *b_HitPosZ;   //!
-   TBranch        *b_EnergyDeposition;   //!
    TBranch        *b_Time;   //!
-   TBranch        *b_GasPosX;   //!
-   TBranch        *b_GasPosY;   //!
-   TBranch        *b_GasPosZ;   //!
-   TBranch        *b_GasDeltaEnergy;   //!
-   TBranch        *b_GasTime;   //!
+   TBranch        *b_EnergyLoss;   //!
+   TBranch        *b_AvalancheSize;   //!
+   TBranch        *b_AvalancheEnergy;   //!
 
    Reader(TTree *tree=0);
    virtual ~Reader();
@@ -117,38 +116,36 @@ void Reader::Init(TTree *tree)
    // (once per file to be processed).
 
    // Set object pointer
+   EnergyDeposition = 0;
+   GasDeltaEnergy = 0;
    ParticleID = 0;
    TrackID = 0;
    ParentID = 0;
    HitPosX = 0;
    HitPosY = 0;
    HitPosZ = 0;
-   EnergyDeposition = 0;
    Time = 0;
-   GasPosX = 0;
-   GasPosY = 0;
-   GasPosZ = 0;
-   GasDeltaEnergy = 0;
-   GasTime = 0;
+   EnergyLoss = 0;
+   AvalancheSize = 0;
+   AvalancheEnergy = 0;
    // Set branch addresses and branch pointers
    if (!tree) return;
    fChain = tree;
    fCurrent = -1;
    fChain->SetMakeClass(1);
 
+   fChain->SetBranchAddress("EnergyDeposition", &EnergyDeposition, &b_EnergyDeposition);
+   fChain->SetBranchAddress("GasDeltaEnergy", &GasDeltaEnergy, &b_GasDeltaEnergy);
    fChain->SetBranchAddress("ParticleID", &ParticleID, &b_ParticleID);
    fChain->SetBranchAddress("TrackID", &TrackID, &b_TrackID);
    fChain->SetBranchAddress("ParentID", &ParentID, &b_ParentID);
    fChain->SetBranchAddress("HitPosX", &HitPosX, &b_HitPosX);
    fChain->SetBranchAddress("HitPosY", &HitPosY, &b_HitPosY);
    fChain->SetBranchAddress("HitPosZ", &HitPosZ, &b_HitPosZ);
-   fChain->SetBranchAddress("EnergyDeposition", &EnergyDeposition, &b_EnergyDeposition);
    fChain->SetBranchAddress("Time", &Time, &b_Time);
-   fChain->SetBranchAddress("GasPosX", &GasPosX, &b_GasPosX);
-   fChain->SetBranchAddress("GasPosY", &GasPosY, &b_GasPosY);
-   fChain->SetBranchAddress("GasPosZ", &GasPosZ, &b_GasPosZ);
-   fChain->SetBranchAddress("GasDeltaEnergy", &GasDeltaEnergy, &b_GasDeltaEnergy);
-   fChain->SetBranchAddress("GasTime", &GasTime, &b_GasTime);
+   fChain->SetBranchAddress("EnergyLoss", &EnergyLoss, &b_EnergyLoss);
+   fChain->SetBranchAddress("AvalancheSize", &AvalancheSize, &b_AvalancheSize);
+   fChain->SetBranchAddress("AvalancheEnergy", &AvalancheEnergy, &b_AvalancheEnergy);
    Notify();
 }
 

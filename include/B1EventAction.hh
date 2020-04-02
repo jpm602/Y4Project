@@ -55,10 +55,12 @@ class B1EventAction : public G4UserEventAction
     virtual void DeltaEnergy(G4double value){deltaEnergy->push_back(value);};
     virtual void IDNumbers(G4int pID, G4int tID, G4int prntID);
 
-    virtual void InitialEnergy(G4double value){initEnergy=value;};
-    virtual void FinalEnergy(G4double value);
+    virtual void FinalEnergy(G4double value){finalEnergy->at(0)=value;};
 
     virtual void AvalancheCount(){avalancheSize->at(0)+=1;};
+    virtual void AvalancheEnergy(G4double value){avalancheEnergy->push_back(value);};
+
+    virtual void LayerCounter(){layerCount->at(0)+=1;};
   
 
   private:
@@ -75,9 +77,12 @@ class B1EventAction : public G4UserEventAction
     std::vector<int> *parentID;
 
     G4double initEnergy = 0;
-    std::vector<double> *energyLoss;
+    std::vector<double> *finalEnergy;
 
     std::vector<int> *avalancheSize;
+    std::vector<double> *avalancheEnergy;
+
+    std::vector<int> *layerCount;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

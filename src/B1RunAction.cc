@@ -74,8 +74,10 @@ void B1RunAction::BeginOfRunAction(const G4Run*)
   analysisManager->CreateNtupleDColumn("HitPosY", hitPosY);
   analysisManager->CreateNtupleDColumn("HitPosZ", hitPosZ);
   analysisManager->CreateNtupleDColumn("Time", time);
-  analysisManager->CreateNtupleDColumn("EnergyLoss", energyLoss);
+  analysisManager->CreateNtupleDColumn("FinalEnergy", finalEnergy);
   analysisManager->CreateNtupleIColumn("AvalancheSize", avalancheSize);
+  analysisManager->CreateNtupleDColumn("AvalancheEnergy", avalancheEnergy);
+  analysisManager->CreateNtupleIColumn("LayerCount", layerCount);
 
   analysisManager->FinishNtuple();
   

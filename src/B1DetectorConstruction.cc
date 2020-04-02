@@ -270,7 +270,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // Placing RPCs in face layers
       for(unsigned int nLayers=0; nLayers<nFaceLayers; nLayers++)
 	{
-	  G4double rpcZPos = -0.5*faceThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
+	  G4double rpcZPos = -0.5*faceThick + 0.5*rpcThick + nLayers*(rpcThick + layerSep);
 	  G4VPhysicalVolume *physRPCEnv = 
 	    new G4PVPlacement(0,                           // no rotation
 			      G4ThreeVector(0, 0, rpcZPos),// at each layer position in the face
@@ -284,7 +284,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
       // Placing RPCs inside groups in central volume
       for(unsigned int nLayers=0; nLayers<nPerCentreGroup; nLayers++)
 	{
-	  G4double rpcZPos = -0.5*groupThick + 0.5*rpcThick + nLayers*(0.5*rpcThick + layerSep);
+	  G4double rpcZPos = -0.5*groupThick + 0.5*rpcThick + nLayers*(rpcThick + layerSep);
 	  G4VPhysicalVolume *physRPCCentreEnv = 
 	    new G4PVPlacement(0,                           // no rotation
 			      G4ThreeVector(0, 0, rpcZPos),// at each layer position in the group

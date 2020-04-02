@@ -52,9 +52,12 @@ B1EventAction::B1EventAction(B1RunAction* runAction)
   trackID = &runAction->trackID;
   parentID = &runAction->parentID;
 
-  energyLoss = &runAction->energyLoss;
+  finalEnergy = &runAction->finalEnergy;
   
   avalancheSize = &runAction->avalancheSize;
+  avalancheEnergy = &runAction->avalancheEnergy;
+
+  layerCount = &runAction->layerCount;
 } 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -77,10 +80,15 @@ void B1EventAction::BeginOfEventAction(const G4Event*)
   trackID->clear();
   parentID->clear();
 
-  energyLoss->clear();
+  finalEnergy->clear();
+  finalEnergy->push_back(0);
 
   avalancheSize->clear();
   avalancheSize->push_back(0);
+  avalancheEnergy->clear();
+
+  layerCount->clear();
+  layerCount->push_back(0);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,15 +114,3 @@ void B1EventAction::IDNumbers(G4int pID, G4int tID, G4int prntID)
   trackID->push_back(tID);
   parentID->push_back(prntID);
 }
-
-void B1EventAction::FinalEnergy(G4double value)
-{
-  if(initEnergy!=0)
-    {
-      G4double energyDiff = initEnergy - value;
-      if(energyDiff!=0)
-        energyLoss->push_back(energyDiff);
-      initEnergy = 0;
-    }
-}
-

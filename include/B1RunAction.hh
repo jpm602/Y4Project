@@ -64,9 +64,12 @@ class B1RunAction : public G4UserRunAction
     std::vector<int> trackID;
     std::vector<int> parentID;
 
-    std::vector<double> energyLoss;
+    std::vector<double> finalEnergy;
 
     std::vector<int> avalancheSize;
+    std::vector<double> avalancheEnergy;
+
+    std::vector<int> layerCount;
 
   private:
   

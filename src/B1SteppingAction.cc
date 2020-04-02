@@ -112,9 +112,18 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 	  if(step->GetTrack()->GetOriginTouchableHandle()->GetVolume()->GetLogicalVolume()->GetName() == "Gas") // Check particle was produced in gas
 	    {
 	      fEventAction->AvalancheCount();
+	      fEventAction->AvalancheEnergy(step->GetTrack()->GetVertexKineticEnergy());
 	    }
 	}
     }
+
+  // Getting final energy of primary particle
+  if(step->GetTrack()->GetParentID() == 0 && step->IsLastStepInVolume() == true)
+    fEventAction->FinalEnergy(step->GetPostStepPoint()->GetKineticEnergy()/step->GetTrack()->GetVertexKineticEnergy());
+
+  // Finding number of RPC gas volumes the primary particle passes through
+  if(step->GetTrack()->GetParentID() == 0 && volume->GetName() == "Gas" && step->IsLastStepInVolume() == true)
+    fEventAction->LayerCounter();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

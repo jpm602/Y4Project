@@ -39,6 +39,10 @@
 #include "G4UImanager.hh"
 #include "QBBC.hh"
 
+// For new EM physics list
+#include "G4PhysListFactory.hh"
+#include "G4PhysicsListHelper.hh"
+
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 
@@ -74,7 +78,11 @@ int main(int argc,char** argv)
   runManager->SetUserInitialization(new B1DetectorConstruction());
 
   // Physics list
-  G4VModularPhysicsList* physicsList = new QBBC;
+  G4String plname = "QBBC_EMY";
+  G4PhysListFactory plfactory;
+  G4VModularPhysicsList* physicsList = plfactory.GetReferencePhysList(plname);
+  
+  //G4VModularPhysicsList* physicsList = new QBBC;
 
   // Step limiter
   G4StepLimiterPhysics* stepLim = new G4StepLimiterPhysics();

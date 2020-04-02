@@ -2,6 +2,7 @@
 #include "TString.h" // For filename string
 #include "TCanvas.h" // For graph canvases
 #include "TH1F.h" // For 1D histograms
+#include "TH1I.h" // For 1D integer histograms
 #include "THStack.h" // For plotting multiple histograms
 #include "TLegend.h" // Legend for energy per particle type plot
 
@@ -34,6 +35,10 @@ int main(int argc, char** argv)
   TH1F *hTotalEdep = new TH1F("edepTotal", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events", 100, 0, 0);
   // Plotting total delta energy for each event
   TH1F *hTotalDeltaE = new TH1F("deltaETotal", "Total Delta Energy of Primary Particle in Gas Regions;Delta Energy(MeV);Number of Events", 100, 0, 0);
+  // Plotting avalanche size for each event
+  TH1I *hAvalSize = new TH1I("avalSize", "Number of Secondary Electrons Produced in the Gas Regions;Number of Electrons;Number of Events", 10, 0, 0);
+  // Plotting avalanche electron energy distribution
+  TH1F *hAvalEnergy = new TH1F("avalEnergy", "Energy Distribution of Secondary Electrons Produced in the Gas Regions;Energy(MeV);Number of Events", 100, 0, 0);
 
   // Loop over events to add up total energy depositions
   Long64_t nentries = reader.fChain->GetEntries();
@@ -97,6 +102,18 @@ int main(int argc, char** argv)
       // Fill histograms for edep and delta energy
       hTotalEdep->Fill(totalEdep);
       hTotalDeltaE->Fill(totalDeltaEnergy);
+
+      // Fill histograms for avalanche size
+      for(unsigned int i=0; i<reader.AvalancheSize->size(); i++)
+	{
+	  if(reader.AvalancheSize->at(i)>0)
+	    hAvalSize->Fill(reader.AvalancheSize->at(i));
+	}
+      // Fill histograms for avalanche electron energies
+      for(unsigned int i=0; i<reader.AvalancheEnergy->size(); i++)
+	{
+	  hAvalEnergy->Fill(reader.AvalancheEnergy->at(i));
+	}
     }
 
   // Draw edep histogram, save it, then delete it
@@ -107,6 +124,16 @@ int main(int argc, char** argv)
   hTotalDeltaE->Draw();
   c1->Print("totalDeltaE.png");
   delete hTotalDeltaE;
+
+  // Redo number of bins of avalanche size histogram, draw it, save it, then delete it
+  hAvalSize->SetBins(hAvalSize->GetMaximum(), 0, 0);
+  hAvalSize->Draw();
+  c1->Print("avalSize.png");
+  delete hAvalSize;
+  // Draw avalanche energy histogram, save it, then delete it
+  hAvalEnergy->Draw();
+  c1->Print("avalEnergy.png");
+  delete hAvalEnergy;
   
   // Plotting total energy deposition for each particle species for each event
   THStack *hs = new THStack("hs", "Energy Deposited per Primary Particle;Energy Deposition (MeV);Number of Events"); // Histogram stack
